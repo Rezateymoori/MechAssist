@@ -1,0 +1,254 @@
+[
+  {
+    "category_id": 1,
+    "name": "SKF 6205-2RS",
+    "brand": "SKF",
+    "description": "Deep Groove Ball Bearing - Sealed",
+    "specifications": [
+      {
+        "parameter": "Bore",
+        "value": "25",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Outer Diameter",
+        "value": "52",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Width",
+        "value": "15",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Speed Limit",
+        "value": "10000",
+        "unit": "RPM"
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Overheating",
+        "cause": "Insufficient lubrication",
+        "solution": "Check grease and replace bearing if damaged"
+      },
+      {
+        "symptom": "Vibration",
+        "cause": "Raceway or ball damage",
+        "solution": "Perform vibration analysis"
+      }
+    ]
+  },
+
+  {
+    "category_id": 1,
+    "name": "SKF 6206 C3",
+    "brand": "SKF",
+    "description": "Deep Groove Ball Bearing with C3 Clearance",
+    "specifications": [
+      {
+        "parameter": "Bore",
+        "value": "30",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Outer Diameter",
+        "value": "62",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Width",
+        "value": "16",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Clearance",
+        "value": "C3",
+        "unit": ""
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Noise",
+        "cause": "Wear or contamination",
+        "solution": "Replace bearing and inspect sealing"
+      }
+    ]
+  },
+
+  {
+    "category_id": 1,
+    "name": "FAG 6308",
+    "brand": "FAG",
+    "description": "Heavy Duty Deep Groove Ball Bearing",
+    "specifications": [
+      {
+        "parameter": "Bore",
+        "value": "40",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Outer Diameter",
+        "value": "90",
+        "unit": "mm"
+      },
+      {
+        "parameter": "Width",
+        "value": "23",
+        "unit": "mm"
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "High vibration",
+        "cause": "Misalignment",
+        "solution": "Check shaft alignment"
+      }
+    ]
+  },
+
+  {
+    "category_id": 2,
+    "name": "SEW R87 Helical Gearbox",
+    "brand": "SEW Eurodrive",
+    "description": "Industrial Helical Gear Reducer",
+    "specifications": [
+      {
+        "parameter": "Ratio",
+        "value": "20:1",
+        "unit": ""
+      },
+      {
+        "parameter": "Output Torque",
+        "value": "800",
+        "unit": "Nm"
+      },
+      {
+        "parameter": "Oil",
+        "value": "ISO VG220",
+        "unit": ""
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Overheating",
+        "cause": "Low oil level",
+        "solution": "Check lubricant level"
+      },
+      {
+        "symptom": "Gear Noise",
+        "cause": "Gear wear",
+        "solution": "Inspect gears"
+      }
+    ]
+  },
+
+  {
+    "category_id": 2,
+    "name": "Bonfiglioli VF49 Worm Gearbox",
+    "brand": "Bonfiglioli",
+    "description": "Worm Gear Reducer",
+    "specifications": [
+      {
+        "parameter": "Ratio",
+        "value": "30:1",
+        "unit": ""
+      },
+      {
+        "parameter": "Efficiency",
+        "value": "75",
+        "unit": "%"
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Temperature Rise",
+        "cause": "Excessive load",
+        "solution": "Reduce load or select larger gearbox"
+      }
+    ]
+  },
+
+  {
+    "category_id": 3,
+    "name": "KTR ROTEX 28",
+    "brand": "KTR",
+    "description": "Flexible Spider Coupling",
+    "specifications": [
+      {
+        "parameter": "Torque",
+        "value": "250",
+        "unit": "Nm"
+      },
+      {
+        "parameter": "Maximum RPM",
+        "value": "5000",
+        "unit": "RPM"
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Shock During Start",
+        "cause": "Damaged Spider Element",
+        "solution": "Replace spider"
+      }
+    ]
+  },
+
+  {
+    "category_id": 4,
+    "name": "Grundfos CR 10-5 Pump",
+    "brand": "Grundfos",
+    "description": "Vertical Multistage Centrifugal Pump",
+    "specifications": [
+      {
+        "parameter": "Flow",
+        "value": "10",
+        "unit": "m3/h"
+      },
+      {
+        "parameter": "Pressure",
+        "value": "50",
+        "unit": "bar"
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Low Pressure",
+        "cause": "Impeller wear",
+        "solution": "Inspect impeller"
+      }
+    ]
+  },
+
+  {
+    "category_id": 5,
+    "name": "Siemens 1LE1001 Motor",
+    "brand": "Siemens",
+    "description": "Three Phase Industrial Induction Motor",
+    "specifications": [
+      {
+        "parameter": "Power",
+        "value": "5.5",
+        "unit": "KW"
+      },
+      {
+        "parameter": "Speed",
+        "value": "1450",
+        "unit": "RPM"
+      },
+      {
+        "parameter": "Protection",
+        "value": "IP55",
+        "unit": ""
+      }
+    ],
+    "failures": [
+      {
+        "symptom": "Motor Overheating",
+        "cause": "Overload or bearing failure",
+        "solution": "Measure current and inspect bearings"
+      }
+    ]
+  }
+]

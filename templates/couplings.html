@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>🔗 بانک کوپلینگ‌ها</h1>
+
+<form class="search-panel" method="get" action="/couplings">
+
+    <input
+        name="q"
+        placeholder="جستجوی کوپلینگ، برند یا سری..."
+    >
+
+    <button type="submit">
+        🔍 جستجو
+    </button>
+
+</form>
+
+
+<div class="equipment-grid">
+
+{% for c in couplings %}
+
+<div class="equipment-card">
+
+    <div class="icon">
+        🔗
+    </div>
+
+    <h2>
+        {{ c.name }}
+    </h2>
+
+    <p>
+        برند:
+        <b>{{ c.brand }}</b>
+    </p>
+
+    <p>
+        نوع:
+        {{ c.coupling_type }}
+    </p>
+
+    <p>
+        سری:
+        {{ c.series }}
+    </p>
+
+    <p>
+        قطر شفت:
+        {{ c.bore }}
+    </p>
+
+    <p>
+        دور مجاز:
+        {{ c.max_rpm }} RPM
+    </p>
+
+    <p>
+        گشتاور نامی:
+        {{ c.nominal_torque }} N.m
+    </p>
+
+    <p>
+        کاربرد:
+        {{ c.application }}
+    </p>
+
+</div>
+
+{% else %}
+
+<div class="detail">
+
+    <h2>🔗 کوپلینگی پیدا نشد</h2>
+
+    <p>
+        هنوز رکوردی در بانک کوپلینگ‌ها وجود ندارد.
+    </p>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

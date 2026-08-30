@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+
+
+<h1>
+⚙ بانک گیربکس‌ها
+</h1>
+
+
+<div class="equipment-grid">
+
+
+{% for g in gearboxes %}
+
+
+<div class="equipment-card">
+
+
+<div class="icon">
+⚙
+</div>
+
+
+<h2>
+{{g.name}}
+</h2>
+
+
+<p>
+برند:
+<b>{{g.brand}}</b>
+</p>
+
+
+<p>
+نوع:
+{{g.gearbox_type}}
+</p>
+
+
+<p>
+نسبت تبدیل:
+{{g.ratio}}
+</p>
+
+
+<p>
+توان:
+{{g.power}}
+</p>
+
+
+</div>
+
+
+{% endfor %}
+
+
+</div>
+
+
+{% endblock %}

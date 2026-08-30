@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>محاسبه عمر برینگ - MechAssist</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="content">
+
+    <h1>📐 محاسبه عمر برینگ</h1>
+
+    <div class="admin-form">
+
+        <form method="POST">
+
+            <label>
+                ظرفیت دینامیکی C (kN)
+            </label>
+
+            <input
+                type="number"
+                step="0.01"
+                name="C"
+                required
+            >
+
+
+            <label>
+                بار معادل P (kN)
+            </label>
+
+            <input
+                type="number"
+                step="0.01"
+                name="P"
+                required
+            >
+
+
+            <label>
+                سرعت دوران RPM
+            </label>
+
+            <input
+                type="number"
+                step="1"
+                name="rpm"
+                required
+            >
+
+
+            <button type="submit">
+                محاسبه عمر برینگ
+            </button>
+
+        </form>
+
+
+        {% if result %}
+
+            {% if result.error %}
+
+                <div class="result error">
+                    {{ result.error }}
+                </div>
+
+            {% else %}
+
+                <div class="result">
+
+                    <h2>نتیجه محاسبه</h2>
+
+                    <p>
+                        عمر L10:
+                        <strong>
+                            {{ result.L10 }}
+                        </strong>
+                        میلیون دور
+                    </p>
+
+                    <p>
+                        عمر کاری:
+                        <strong>
+                            {{ result.hours }}
+                        </strong>
+                        ساعت
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

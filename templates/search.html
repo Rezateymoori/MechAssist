@@ -1,0 +1,144 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+
+
+<h1>
+🔍 جستجوی پیشرفته تجهیزات
+</h1>
+
+
+
+<form class="search-panel"
+method="get"
+action="/search">
+
+
+
+<input
+name="q"
+placeholder="نام تجهیز یا مدل..."
+>
+
+
+
+<select name="category">
+
+<option value="">
+همه دسته‌ها
+</option>
+
+
+{% for c in categories %}
+
+<option value="{{c.id}}">
+
+{{c.name_fa}}
+
+</option>
+
+{% endfor %}
+
+
+</select>
+
+
+
+
+<select name="brand">
+
+
+<option value="">
+همه برندها
+</option>
+
+
+{% for b in brands %}
+
+<option>
+
+{{b.brand}}
+
+</option>
+
+
+{% endfor %}
+
+
+</select>
+
+
+
+<button>
+
+جستجو
+
+</button>
+
+
+</form>
+
+
+
+
+
+<h2>
+
+نتایج:
+{{results|length}}
+
+</h2>
+
+
+
+<div class="equipment-grid">
+
+
+{% for item in results %}
+
+
+
+<div class="equipment-card">
+
+
+<div class="icon">
+⚙
+</div>
+
+
+<h3>
+{{item.name}}
+</h3>
+
+
+<p>
+برند:
+{{item.brand}}
+</p>
+
+
+<p>
+{{item.name_fa}}
+</p>
+
+
+<a href="/equipment/{{item.id}}">
+
+مشاهده جزئیات
+
+</a>
+
+
+
+</div>
+
+
+{% endfor %}
+
+
+</div>
+
+
+
+{% endblock %}

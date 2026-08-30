@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="page-title">
+
+    <h2>🔩 بانک برینگ‌ها</h2>
+
+    <p>
+        جستجو و مشاهده مشخصات فنی برینگ‌ها
+    </p>
+
+</div>
+
+
+<form
+    class="search-panel"
+    method="GET"
+    action="{{ url_for('bearings') }}"
+>
+
+    <input
+        type="text"
+        name="q"
+        value="{{ search }}"
+        placeholder="نام برینگ، برند، نوع یا سری..."
+    >
+
+    <button type="submit">
+        🔍 جستجو
+    </button>
+
+</form>
+
+
+{% if bearings %}
+
+<div class="equipment-grid">
+
+    {% for b in bearings %}
+
+    <div class="equipment-card">
+
+        <div class="icon">
+            🔩
+        </div>
+
+        <div>
+
+            <h2>
+                {{ b.name }}
+            </h2>
+
+            <p>
+                <strong>برند:</strong>
+                {{ b.brand or "-" }}
+            </p>
+
+            <p>
+                <strong>نوع:</strong>
+                {{ b.bearing_type or "-" }}
+            </p>
+
+            <p>
+                <strong>سری:</strong>
+                {{ b.series or "-" }}
+            </p>
+
+            <p>
+                <strong>قطر داخلی:</strong>
+                {{ b.bore or "-" }}
+            </p>
+
+            <p>
+                <strong>حداکثر دور:</strong>
+                {{ b.max_rpm or "-" }}
+            </p>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('bearing_detail', id=b.id) }}"
+        >
+            مشاهده مشخصات
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="search-panel">
+
+    <h3>
+        ⚠️ برینگی پیدا نشد
+    </h3>
+
+    {% if search %}
+        <p>
+            نتیجه‌ای برای «{{ search }}» پیدا نشد.
+        </p>
+    {% else %}
+        <p>
+            هنوز رکوردی در بانک برینگ‌ها وجود ندارد.
+        </p>
+    {% endif %}
+
+</div>
+
+{% endif %}
+
+{% endblock %}
