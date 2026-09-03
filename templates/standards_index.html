@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<h1>📊 جداول استاندارد</h1>
+
+<div class="equipment-grid">
+
+{% for item in categories %}
+
+<a href="/standards/{{ item.category }}" class="equipment-card">
+
+    <div class="icon">📊</div>
+
+    <h2>{{ item.category }}</h2>
+
+    <p>
+        تعداد رکورد: {{ item.count }}
+    </p>
+
+    <span>
+        مشاهده جدول ←
+    </span>
+
+</a>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+
+
+<h1>
+➕ افزودن تجهیز جدید
+</h1>
+
+
+
+<form method="post"
+class="admin-form">
+
+
+<input
+name="name"
+placeholder="نام تجهیز"
+required>
+
+
+<input
+name="brand"
+placeholder="برند">
+
+
+<textarea
+name="description"
+placeholder="توضیحات فنی">
+</textarea>
+
+
+
+<select name="category">
+
+
+{% for c in categories %}
+
+
+<option value="{{c.id}}">
+
+{{c.name_fa}}
+
+</option>
+
+
+{% endfor %}
+
+
+</select>
+
+
+
+<button>
+
+ذخیره تجهیز
+
+</button>
+
+
+
+</form>
+
+
+{% endblock %}
