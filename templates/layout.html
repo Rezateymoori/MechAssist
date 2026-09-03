@@ -71,11 +71,11 @@ if ("serviceWorker" in navigator) {
 
             <!-- تجهیزات -->
 
-            <div class="menu-group">
+            <div class="menu-group collapsible-group">
 
-                <a href="#">
-                    ⚙ تجهیزات
-                </a>
+                <button type="button" class="menu-toggle" aria-expanded="false">
+                    <span>⚙ تجهیزات</span><span class="toggle-arrow">▾</span>
+                </button>
 
 
                 <div class="submenu">
@@ -83,9 +83,9 @@ if ("serviceWorker" in navigator) {
 
                     <!-- قطعات مکانیکی -->
 
-                    <a href="#">
-                        🔩 قطعات مکانیکی
-                    </a>
+                    <button type="button" class="submenu-toggle" aria-expanded="false">
+                        <span>🔩 قطعات مکانیکی</span><span class="toggle-arrow">▾</span>
+                    </button>
 
 
                     <div class="submenu-level2">
@@ -93,9 +93,9 @@ if ("serviceWorker" in navigator) {
 
                         <!-- برینگ -->
 
-                        <a href="#">
-                            🔩 برینگ‌ها
-                        </a>
+                        <button type="button" class="submenu-toggle submenu-toggle-small" aria-expanded="false">
+                            <span>🔩 برینگ‌ها</span><span class="toggle-arrow">▾</span>
+                        </button>
 
 
                         <div class="submenu-level3">
@@ -154,6 +154,32 @@ if ("serviceWorker" in navigator) {
 
 
 
+            <!-- تأسیسات -->
+            <div class="menu-group collapsible-group">
+                <button type="button" class="menu-toggle" aria-expanded="false"><span>🏢 تأسیسات</span><span class="toggle-arrow">▾</span></button>
+                <div class="submenu">
+                    <a href="/facilities">🏢 مرکز تأسیسات</a>
+                    <a href="/facilities/pump">💧 پمپ‌ها</a>
+                    <a href="/facilities/fan">🌀 فن و هواکش</a>
+                    <a href="/facilities/compressor">💨 کمپرسورها</a>
+                    <a href="/facilities/chiller">❄️ چیلرها</a>
+                    <a href="/facilities/boiler">🔥 بویلر و دیگ</a>
+                    <a href="/facilities/hvac">🌬️ HVAC</a>
+                    <a href="/facilities/valve">🔧 شیرآلات</a>
+                    <a href="/facilities/heat_exchanger">♨️ مبدل حرارتی</a>
+                    <a href="/facilities/tank">🛢️ مخازن</a>
+                    <a href="/facilities/pipe">➰ لوله و اتصالات</a>
+                    <a href="/facilities/fire_fighting">🚒 آتش‌نشانی</a>
+                    <a href="/facilities/water_treatment">🚰 تصفیه آب</a>
+                    <a href="/facilities/cooling_tower">🏭 برج خنک‌کننده</a>
+                    <a href="/facility-calculations">🧮 محاسبات</a>
+                    <a href="/facility-pump-selection">💧 انتخاب پمپ</a>
+                    <a href="/facility-systems">🏗️ سیستم‌ها</a>
+                    <a href="/facility-knowledge">📚 دانشنامه</a>
+                    <a href="/facility-standards">📊 استانداردها</a>
+                </div>
+            </div>
+
             <!-- جستجو -->
 
             <a href="/search">
@@ -161,11 +187,9 @@ if ("serviceWorker" in navigator) {
             </a>
 
 
-<div class="menu-group">
+<div class="menu-group collapsible-group">
 
-    <a href="#">
-        📊 جداول استاندارد
-    </a>
+    <button type="button" class="menu-toggle" aria-expanded="false"><span>📊 جداول استاندارد</span><span class="toggle-arrow">▾</span></button>
 
     <div class="submenu">
 
@@ -205,30 +229,6 @@ if ("serviceWorker" in navigator) {
 
 </div>
 
-
-            <!-- تاسیسات -->
-            <div class="menu-group">
-                <a href="/facilities">🏢 تأسیسات</a>
-                <div class="submenu">
-                    <a href="/facilities/pump">💧 پمپ‌ها</a>
-                    <a href="/facilities/fan">🌀 فن‌ها و هواکش‌ها</a>
-                    <a href="/facilities/compressor">💨 کمپرسورها</a>
-                    <a href="/facilities/chiller">❄️ چیلرها</a>
-                    <a href="/facilities/boiler">🔥 بویلرها</a>
-                    <a href="/facilities/hvac">🌬️ HVAC</a>
-                    <a href="/facilities/valve">🔧 شیرآلات</a>
-                    <a href="/facilities/heat_exchanger">♨️ مبدل‌های حرارتی</a>
-                    <a href="/facilities/tank">🛢️ مخازن</a>
-                    <a href="/facilities/pipe">➰ لوله و اتصالات</a>
-                    <a href="/facilities/fire_fighting">🚒 آتش‌نشانی</a>
-                    <a href="/facilities/water_treatment">🚰 تصفیه آب</a>
-                    <a href="/facilities/air_handling">🌪️ هواسازها</a>
-                    <a href="/facilities/cooling_tower">🏭 برج خنک‌کننده</a>
-                    <a href="/facility-calculations">🧮 محاسبات تأسیسات</a>
-                    <a href="/facility-knowledge">📚 دانشنامه تأسیسات</a>
-                    <a href="/facility-standards">📊 استانداردهای تأسیسات</a>
-                </div>
-            </div>
 
             <!-- دانشنامه -->
 
@@ -293,6 +293,20 @@ if ("serviceWorker" in navigator) {
 </div>
 
 
+<script>
+(function(){
+  document.querySelectorAll(".menu-toggle, .submenu-toggle").forEach(function(btn){
+    btn.addEventListener("click",function(){
+      const target = btn.nextElementSibling;
+      const isOpen = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!isOpen));
+      if(target && (target.classList.contains("submenu") || target.classList.contains("submenu-level2") || target.classList.contains("submenu-level3"))){
+        target.classList.toggle("open", !isOpen);
+      }
+    });
+  });
+})();
+</script>
 </body>
 
 </html>

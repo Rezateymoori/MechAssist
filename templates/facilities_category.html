@@ -1,0 +1,6 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-hero"><div><span class="eyebrow">{{ category.slug|upper }}</span><h1>{{ category.icon }} {{ category.name_fa }}</h1><p>{{ category.description }}</p></div><a class="secondary-btn" href="/facilities">← همه تأسیسات</a></div>
+<form class="search-panel facility-search" method="get"><input name="q" value="{{ search }}" placeholder="جستجو در {{ category.name_fa }}، مدل، برند..."><button>جستجو</button></form>
+<div class="equipment-grid">{% for item in items %}<div class="equipment-card facility-card"><div class="facility-icon">{{ category.icon }}</div><h2>{{ item.name }}</h2><p><b>مدل:</b> {{ item.model }}</p><p><b>کاربرد:</b> {{ item.application }}</p><p>{{ item.description }}</p><a class="primary-btn" href="/facility/{{ item.id }}">مشاهده مشخصات و عیب‌یابی</a></div>{% else %}<div class="detail"><h3>موردی پیدا نشد</h3></div>{% endfor %}</div>
+{% endblock %}

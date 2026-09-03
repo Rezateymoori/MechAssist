@@ -141,4 +141,17 @@ placeholder="نام تجهیز یا مدل..."
 
 
 
-{% if facility_results %}<h2 style="margin-top:35px">🏢 نتایج تأسیسات: {{facility_results|length}}</h2><div class="equipment-grid">{% for item in facility_results %}<div class="equipment-card"><div class="icon">🏢</div><h3>{{item.name}}</h3><p>{{item.brand or "-"}}</p><p>{{item.description}}</p><a href="/facility/{{item.id}}">مشاهده جزئیات</a></div>{% endfor %}</div>{% endif %}{% endblock %}
+<h2>🏢 نتایج تأسیسات: {{ facility_results|length }}</h2>
+<div class="equipment-grid">
+{% for item in facility_results %}
+<div class="equipment-card facility-card">
+<div class="facility-icon">{{item.icon}}</div>
+<h3>{{item.name}}</h3>
+<p>{{item.name_fa}}</p>
+<p>مدل: {{item.model}} | {{item.brand}}</p>
+<a href="/facility/{{item.id}}">مشاهده جزئیات</a>
+</div>
+{% endfor %}
+</div>
+
+{% endblock %}

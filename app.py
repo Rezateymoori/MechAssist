@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import json
 import os
+import math
 
 app = Flask(__name__)
 
@@ -20,6 +21,109 @@ def get_db():
 
     return conn
 
+
+
+FACILITIES_SEED = os.path.join(BASE_DIR, "database", "facilities_seed.json")
+
+
+def init_facilities_db():
+    """Create and seed the facilities module without disturbing existing tables."""
+    conn = get_db()
+    conn.executescript("""
+    CREATE TABLE IF NOT EXISTS facility_categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT UNIQUE NOT NULL,
+        name_fa TEXT NOT NULL,
+        icon TEXT DEFAULT '🏢',
+        description TEXT
+    );
+    CREATE TABLE IF NOT EXISTS facilities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
+        brand TEXT,
+        model TEXT,
+        description TEXT,
+        application TEXT,
+        status TEXT,
+        FOREIGN KEY(category_id) REFERENCES facility_categories(id)
+    );
+    CREATE TABLE IF NOT EXISTS facility_specifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        facility_id INTEGER NOT NULL,
+        parameter TEXT,
+        value TEXT,
+        unit TEXT,
+        FOREIGN KEY(facility_id) REFERENCES facilities(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS facility_failures (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        facility_id INTEGER NOT NULL,
+        symptom TEXT,
+        cause TEXT,
+        solution TEXT,
+        FOREIGN KEY(facility_id) REFERENCES facilities(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS facility_alternatives (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        facility_id INTEGER NOT NULL,
+        alternative_name TEXT,
+        brand TEXT,
+        FOREIGN KEY(facility_id) REFERENCES facilities(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS facility_standards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        scope TEXT
+    );
+    CREATE TABLE IF NOT EXISTS facility_calculators (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT UNIQUE NOT NULL,
+        title TEXT NOT NULL,
+        formula TEXT,
+        description TEXT
+    );
+    CREATE TABLE IF NOT EXISTS facility_systems (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        slug TEXT UNIQUE NOT NULL,
+        name_fa TEXT NOT NULL,
+        description TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_facilities_category ON facilities(category_id);
+    CREATE INDEX IF NOT EXISTS idx_facility_specs_facility ON facility_specifications(facility_id);
+    CREATE INDEX IF NOT EXISTS idx_facility_failures_facility ON facility_failures(facility_id);
+    """)
+    count = conn.execute("SELECT COUNT(*) FROM facilities").fetchone()[0]
+    if count == 0 and os.path.exists(FACILITIES_SEED):
+        with open(FACILITIES_SEED, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        for slug, name_fa, desc, _families in data['categories']:
+            icon = {'pump':'💧','fan':'🌀','compressor':'💨','chiller':'❄️','boiler':'🔥','hvac':'🌬️','valve':'🔧','heat_exchanger':'♨️','tank':'🛢️','pipe':'➰','fire_fighting':'🚒','water_treatment':'🚰','cooling_tower':'🏭'}.get(slug,'🏢')
+            conn.execute("INSERT OR IGNORE INTO facility_categories(slug,name_fa,icon,description) VALUES(?,?,?,?)", (slug,name_fa,icon,desc))
+        conn.commit()
+        cat_ids={r['slug']:r['id'] for r in conn.execute('SELECT id,slug FROM facility_categories').fetchall()}
+        for x in data['equipment']:
+            cur=conn.execute("INSERT INTO facilities(category_id,name,brand,model,description,application,status) VALUES(?,?,?,?,?,?,?)", (cat_ids[x['category']],x['name'],x['brand'],x['model'],x['description'],x['application'],x['status']))
+            fid=cur.lastrowid
+            for q in [z for z in data['specifications'] if z['equipment_id']==x['id']]:
+                conn.execute("INSERT INTO facility_specifications(facility_id,parameter,value,unit) VALUES(?,?,?,?)",(fid,q['parameter'],q['value'],q['unit']))
+            for q in [z for z in data['failures'] if z['equipment_id']==x['id']]:
+                conn.execute("INSERT INTO facility_failures(facility_id,symptom,cause,solution) VALUES(?,?,?,?)",(fid,q['symptom'],q['cause'],q['solution']))
+            for q in [z for z in data['alternatives'] if z['equipment_id']==x['id']]:
+                conn.execute("INSERT INTO facility_alternatives(facility_id,alternative_name,brand) VALUES(?,?,?)",(fid,q['alternative_name'],q['brand']))
+        for code,name,description in data['standards']:
+            conn.execute("INSERT INTO facility_standards(code,name,description,scope) VALUES(?,?,?,?)",(code,name,description,'تأسیسات مکانیکی، HVAC، لوله‌کشی، آتش‌نشانی یا تجهیزات مرتبط'))
+        for slug,title,formula,description in data['calculators']:
+            conn.execute("INSERT INTO facility_calculators(slug,title,formula,description) VALUES(?,?,?,?)",(slug,title,formula,description))
+        for slug,name_fa,description in data.get('systems',[]):
+            conn.execute("INSERT INTO facility_systems(slug,name_fa,description) VALUES(?,?,?)",(slug,name_fa,description))
+        conn.commit()
+    conn.close()
+
+
+init_facilities_db()
 
 
 # صفحه اصلی
@@ -286,31 +390,28 @@ def search():
 
 
     brands = conn.execute(
-
-        """
-        SELECT DISTINCT brand
-        FROM equipment
-
-        """
-
+        "SELECT DISTINCT brand FROM equipment WHERE brand IS NOT NULL AND brand <> ''"
     ).fetchall()
 
-
+    facility_results = []
+    if keyword:
+        facility_results = conn.execute("""
+            SELECT f.id, f.name, f.brand, f.model, f.description, c.name_fa, c.slug, c.icon
+            FROM facilities f
+            JOIN facility_categories c ON f.category_id=c.id
+            WHERE f.name LIKE ? OR f.brand LIKE ? OR f.model LIKE ?
+               OR f.description LIKE ? OR c.name_fa LIKE ?
+            ORDER BY f.id DESC
+        """, tuple([f"%{keyword}%"] * 5)).fetchall()
 
     conn.close()
 
-
-
     return render_template(
-
         "search.html",
-
         results=results,
-
+        facility_results=facility_results,
         categories=categories,
-
         brands=brands
-
     )
 
 @app.route("/admin")
@@ -787,138 +888,134 @@ def standard_table(category):
     )
 
 
-# ========================= FACILITIES MODULE =========================
-FACILITY_CATEGORIES = {
-    "pump": {"fa": "پمپ‌ها", "icon": "💧"},
-    "fan": {"fa": "فن‌ها و هواکش‌ها", "icon": "🌀"},
-    "compressor": {"fa": "کمپرسورها", "icon": "💨"},
-    "chiller": {"fa": "چیلرها", "icon": "❄️"},
-    "boiler": {"fa": "بویلرها", "icon": "🔥"},
-    "hvac": {"fa": "تجهیزات HVAC", "icon": "🌬️"},
-    "valve": {"fa": "شیرآلات", "icon": "🔧"},
-    "heat_exchanger": {"fa": "مبدل‌های حرارتی", "icon": "♨️"},
-    "tank": {"fa": "مخازن", "icon": "🛢️"},
-    "pipe": {"fa": "لوله و اتصالات", "icon": "➰"},
-    "fire_fighting": {"fa": "آتش‌نشانی", "icon": "🚒"},
-    "water_treatment": {"fa": "تصفیه آب", "icon": "🚰"},
-    "air_handling": {"fa": "هواسازها", "icon": "🌪️"},
-    "cooling_tower": {"fa": "برج خنک‌کننده", "icon": "🏭"}
+# ===================== ماژول کامل تأسیسات =====================
+
+FACILITY_ICONS = {
+    'pump':'💧','fan':'🌀','compressor':'💨','chiller':'❄️','boiler':'🔥','hvac':'🌬️',
+    'valve':'🔧','heat_exchanger':'♨️','tank':'🛢️','pipe':'➰','fire_fighting':'🚒',
+    'water_treatment':'🚰','cooling_tower':'🏭'
 }
 
-FACILITY_CALCS = [
-    {"key":"pump_head","title":"هد پمپ","formula":"H = ΔP / (ρg)","description":"تبدیل اختلاف فشار به هد سیال."},
-    {"key":"pump_power","title":"توان هیدرولیکی پمپ","formula":"P = ρgQH / η","description":"Q بر حسب m³/s، H بر حسب m و η به صورت اعشاری."},
-    {"key":"pipe_velocity","title":"سرعت جریان در لوله","formula":"v = Q / A","description":"Q بر حسب m³/s و قطر داخلی لوله بر حسب m."},
-    {"key":"pipe_diameter","title":"قطر لوله از روی دبی و سرعت","formula":"D = √(4Q / πv)","description":"قطر داخلی نظری لوله."},
-    {"key":"pressure_drop","title":"افت فشار دارسی-ویسباخ","formula":"ΔP = f(L/D)(ρv²/2)","description":"برای افت اصطکاکی مستقیم؛ افت‌های موضعی جداگانه بررسی شوند."},
-    {"key":"cooling_capacity","title":"ظرفیت سرمایش آب","formula":"Q̇ = ρ cp Q ΔT","description":"ظرفیت سرمایش بر اساس دبی حجمی آب و اختلاف دما."},
-    {"key":"heating_capacity","title":"ظرفیت گرمایش آب","formula":"Q̇ = ρ cp Q ΔT","description":"ظرفیت گرمایش برای مدار آب گرم."},
-    {"key":"tank_volume","title":"حجم مخزن استوانه‌ای","formula":"V = πD²H / 4","description":"D و H بر حسب متر؛ خروجی m³."},
-    {"key":"airflow","title":"دبی هوا از سرعت و سطح","formula":"Q = vA","description":"Q بر حسب m³/s."},
-    {"key":"fan_power","title":"توان هوادهی فن","formula":"P = QΔP / η","description":"Q بر حسب m³/s و ΔP بر حسب Pa."},
-    {"key":"compressor_power","title":"توان تقریبی کمپرسور","formula":"P ≈ QΔP / η","description":"برای برآورد اولیه؛ طراحی کمپرسور نیازمند ترمودینامیک و دیتاشیت است."}
-]
-
-@app.route("/facilities")
-def facilities():
+@app.route('/facilities')
+def facilities_home():
     conn=get_db()
-    counts=conn.execute("SELECT category, COUNT(*) count FROM facilities GROUP BY category").fetchall()
+    categories=conn.execute("""SELECT c.*, COUNT(f.id) AS count FROM facility_categories c LEFT JOIN facilities f ON f.category_id=c.id GROUP BY c.id ORDER BY c.id""").fetchall()
+    total=conn.execute('SELECT COUNT(*) FROM facilities').fetchone()[0]
+    standards_count=conn.execute('SELECT COUNT(*) FROM facility_standards').fetchone()[0]
+    calc_count=conn.execute('SELECT COUNT(*) FROM facility_calculators').fetchone()[0]
     conn.close()
-    count_map={r["category"]:r["count"] for r in counts}
-    cards=[]
-    for key,meta in FACILITY_CATEGORIES.items():
-        cards.append({"key":key,"fa":meta["fa"],"icon":meta["icon"],"count":count_map.get(key,0)})
-    return render_template("facilities.html", categories=cards)
+    return render_template('facilities_index.html', categories=categories, total=total, standards_count=standards_count, calc_count=calc_count)
 
-@app.route("/facilities/<category>")
-def facility_category(category):
-    if category not in FACILITY_CATEGORIES: return "دسته تأسیسات پیدا نشد",404
-    q=request.args.get("q","").strip()
+@app.route('/facilities/<category>')
+def facilities_category(category):
+    q=request.args.get('q','').strip()
     conn=get_db()
-    sql="SELECT * FROM facilities WHERE category=?"
+    cat=conn.execute('SELECT * FROM facility_categories WHERE slug=?',(category,)).fetchone()
+    if not cat:
+        conn.close(); return 'دسته تأسیسات پیدا نشد',404
+    sql="""SELECT f.*, c.name_fa, c.slug, c.icon FROM facilities f JOIN facility_categories c ON f.category_id=c.id WHERE c.slug=?"""
     params=[category]
     if q:
-        sql += " AND (name LIKE ? OR brand LIKE ? OR model LIKE ? OR description LIKE ? OR application LIKE ?)"
-        params += [f"%{q}%"]*5
-    sql += " ORDER BY id DESC"
-    rows=conn.execute(sql,params).fetchall(); conn.close()
-    return render_template("facility_list.html", rows=rows, category=FACILITY_CATEGORIES[category], category_key=category, search=q)
+        sql += " AND (f.name LIKE ? OR f.brand LIKE ? OR f.model LIKE ? OR f.description LIKE ?)"
+        params += [f'%{q}%']*4
+    sql += ' ORDER BY f.id'
+    items=conn.execute(sql,params).fetchall(); conn.close()
+    return render_template('facilities_category.html', category=cat, items=items, search=q)
 
-@app.route("/facility/<int:id>")
+@app.route('/facility/<int:id>')
 def facility_detail(id):
     conn=get_db()
-    row=conn.execute("SELECT * FROM facilities WHERE id=?",(id,)).fetchone()
-    if not row: conn.close(); return "تجهیز تأسیسات پیدا نشد",404
-    specs=conn.execute("SELECT * FROM facility_specifications WHERE facility_id=?",(id,)).fetchall()
-    failures=conn.execute("SELECT * FROM facility_failures WHERE facility_id=?",(id,)).fetchall()
-    alternatives=conn.execute("SELECT * FROM facility_alternatives WHERE facility_id=?",(id,)).fetchall()
+    item=conn.execute("""SELECT f.*, c.name_fa, c.slug, c.icon FROM facilities f JOIN facility_categories c ON f.category_id=c.id WHERE f.id=?""",(id,)).fetchone()
+    if not item: conn.close(); return 'تجهیز تأسیسات پیدا نشد',404
+    specs=conn.execute('SELECT * FROM facility_specifications WHERE facility_id=? ORDER BY id',(id,)).fetchall()
+    failures=conn.execute('SELECT * FROM facility_failures WHERE facility_id=? ORDER BY id',(id,)).fetchall()
+    alternatives=conn.execute('SELECT * FROM facility_alternatives WHERE facility_id=? ORDER BY id',(id,)).fetchall()
     conn.close()
-    return render_template("facility_detail.html", facility=row, specs=specs, failures=failures, alternatives=alternatives, category=FACILITY_CATEGORIES.get(row["category"],{}))
+    return render_template('facility_detail.html', item=item, specs=specs, failures=failures, alternatives=alternatives)
 
-@app.route("/facility-calculations", methods=["GET","POST"])
-def facility_calculations():
-    key=request.form.get("calc","") if request.method=="POST" else request.args.get("calc","")
-    result=None; error=None
-    try:
-        if request.method=="POST":
-            def f(name): return float(request.form.get(name,"0"))
-            if key=="pump_head": result={"value": f("dp")/(f("rho")*f("g")),"unit":"m"}
-            elif key=="pump_power": result={"value": f("rho")*f("g")*f("q")*f("h")/f("eta"),"unit":"W"}
-            elif key=="pipe_velocity": result={"value": f("q")/(3.141592653589793*f("d")**2/4),"unit":"m/s"}
-            elif key=="pipe_diameter": result={"value":(4*f("q")/(3.141592653589793*f("v")))**0.5,"unit":"m"}
-            elif key=="pressure_drop": result={"value":f("friction")*(f("length")/f("diameter"))*(f("rho")*f("velocity")**2/2),"unit":"Pa"}
-            elif key in ("cooling_capacity","heating_capacity"): result={"value":f("rho")*f("cp")*f("q")*f("dt"),"unit":"W"}
-            elif key=="tank_volume": result={"value":3.141592653589793*f("d")**2*f("h")/4,"unit":"m³"}
-            elif key=="airflow": result={"value":f("velocity")*f("area"),"unit":"m³/s"}
-            elif key in ("fan_power","compressor_power"): result={"value":f("q")*f("pressure")/f("eta"),"unit":"W"}
-            else: error="نوع محاسبه انتخاب نشده است."
-            if result: result["value"]=round(result["value"],4)
-    except (ValueError,ZeroDivisionError): error="مقادیر ورودی باید عددی و مخرج‌ها بزرگ‌تر از صفر باشند."
-    return render_template("facility_calculations.html", calculations=FACILITY_CALCS, selected=key, result=result, error=error)
+@app.route('/facility-systems')
+def facility_systems():
+    conn=get_db(); systems=conn.execute('SELECT * FROM facility_systems ORDER BY id').fetchall(); conn.close()
+    return render_template('facility_systems.html', systems=systems)
 
-@app.route("/facility-knowledge")
+@app.route('/facility-knowledge')
 def facility_knowledge():
-    topics=[
-      ("water-supply","آبرسانی","انتخاب پمپ، مخزن، قطر لوله و کنترل فشار در شبکه آبرسانی."),
-      ("sewage","فاضلاب","شیب‌بندی، تهویه، انتخاب لوله و کنترل گرفتگی در شبکه فاضلاب."),
-      ("heating","گرمایش","دیگ، پمپ، مبدل، کنترل دما و بالانس مدار گرمایش."),
-      ("cooling","سرمایش","چیلر، برج خنک‌کننده، پمپ‌ها و مدار آب سرد."),
-      ("hvac","تهویه مطبوع","بار سرمایش/گرمایش، هوای تازه، هواساز، کانال و کنترل کیفیت هوا."),
-      ("compressed-air","هوای فشرده","کمپرسور، درایر، مخزن، افت فشار و کیفیت هوای فشرده."),
-      ("steam","بخار","بویلر، تله بخار، مبدل و خطوط بخار و برگشت کندانس."),
-      ("fire","آتش‌نشانی","پمپ آتش‌نشانی، اسپرینکلر، هیدرانت، مخزن و شبکه اطفا."),
-      ("water-treatment","تصفیه آب","فیلتراسیون، سختی‌گیری، RO و کنترل کیفیت آب."),
-    ]
-    return render_template("facility_knowledge.html", topics=topics)
+    path=os.path.join(BASE_DIR,'database','facilities_seed.json')
+    with open(path,'r',encoding='utf-8') as f: data=json.load(f)
+    items=[]
+    for slug,_,_,_ in data['categories']:
+        k=data['knowledge'].get(slug)
+        if k: items.append({'slug':slug,'title':k['title'],'intro':k['intro'],'sections':k['sections']})
+    return render_template('facility_knowledge.html', items=items)
 
-@app.route("/facility-knowledge/<topic>")
-def facility_knowledge_topic(topic):
-    data={
-      "water-supply":("آبرسانی","محاسبه دبی همزمان، انتخاب قطر اقتصادی، افت فشار، هد استاتیک و کنترل فشار از مراحل اصلی طراحی شبکه است."),
-      "sewage":("فاضلاب","در شبکه فاضلاب شیب، سرعت خودپاک‌کنندگی، تهویه و دسترسی برای تعمیرات اهمیت دارد."),
-      "heating":("گرمایش","ظرفیت حرارتی از Q̇=ρcpQΔT به دست می‌آید؛ انتخاب دیگ و پمپ باید با بار واقعی و شرایط طراحی انجام شود."),
-      "cooling":("سرمایش","ظرفیت سرمایش مدار آب سرد تابع دبی، گرمای ویژه و اختلاف دماست و باید با شرایط چیلر تطبیق داده شود."),
-      "hvac":("تهویه مطبوع","بار حرارتی، هوای تازه، رطوبت، افت فشار کانال و انتخاب فن/هواساز در طراحی بررسی می‌شوند."),
-      "compressed-air":("هوای فشرده","مصرف واقعی، فشار مورد نیاز، افت فشار، ذخیره‌سازی، درایر و کیفیت هوا باید همزمان بررسی شوند."),
-      "steam":("بخار","فشار و دمای طراحی، تله‌های بخار، شیب خطوط، جداسازی کندانس و ایمنی دیگ از موارد کلیدی هستند."),
-      "fire":("آتش‌نشانی","طراحی سامانه اطفا باید مطابق کدها و ضوابط محلی و توسط فرد صلاحیت‌دار انجام شود."),
-      "water-treatment":("تصفیه آب","فرایند مناسب به کیفیت آب خام و هدف مصرف بستگی دارد؛ پایش پارامترهای آب برای بهره‌برداری ضروری است.")}
-    if topic not in data: return "موضوع پیدا نشد",404
-    return render_template("facility_knowledge_topic.html", title=data[topic][0], text=data[topic][1])
+@app.route('/facility-knowledge/<slug>')
+def facility_knowledge_detail(slug):
+    with open(FACILITIES_SEED,'r',encoding='utf-8') as f: data=json.load(f)
+    k=data['knowledge'].get(slug)
+    if not k: return 'دانشنامه تأسیسات پیدا نشد',404
+    return render_template('facility_knowledge_detail.html', knowledge=k, slug=slug)
 
-@app.route("/facility-standards")
+@app.route('/facility-standards')
 def facility_standards():
-    conn=get_db(); cats=conn.execute("SELECT category,COUNT(*) count FROM facility_standards GROUP BY category ORDER BY category").fetchall(); conn.close()
-    return render_template("facility_standards.html", categories=cats)
-
-@app.route("/facility-standards/<category>")
-def facility_standard_table(category):
-    q=request.args.get("q","").strip(); conn=get_db()
-    sql="SELECT * FROM facility_standards WHERE category=?"; params=[category]
+    q=request.args.get('q','').strip()
+    conn=get_db()
     if q:
-        sql += " AND (code LIKE ? OR name LIKE ? OR standard LIKE ? OR size LIKE ? OR description LIKE ?)"; params += [f"%{q}%"]*5
-    rows=conn.execute(sql,params).fetchall(); conn.close()
-    return render_template("facility_standard_table.html", rows=rows, category=category, search=q)
+        rows=conn.execute('SELECT * FROM facility_standards WHERE code LIKE ? OR name LIKE ? OR description LIKE ? ORDER BY id',(f'%{q}%',f'%{q}%',f'%{q}%')).fetchall()
+    else: rows=conn.execute('SELECT * FROM facility_standards ORDER BY id').fetchall()
+    conn.close()
+    return render_template('facility_standards.html', rows=rows, search=q)
+
+@app.route('/facility-pump-selection', methods=['GET','POST'])
+def facility_pump_selection():
+    result = None
+    error = None
+    if request.method == 'POST':
+        try:
+            q = float(request.form.get('q', 0))
+            head = float(request.form.get('head', 0))
+            rho = float(request.form.get('rho', 1000))
+            eta = float(request.form.get('eta', 70)) / 100
+            npsha = float(request.form.get('npsha', 0))
+            npshr = float(request.form.get('npshr', 0))
+            if q <= 0 or head <= 0 or rho <= 0 or eta <= 0 or eta > 1:
+                raise ValueError()
+            # Q is entered in m3/h. Hydraulic power P(kW)=rho*g*(Q/3600)*H/eta.
+            power_kw = rho * 9.81 * (q / 3600) * head / eta / 1000
+            npsh_margin = npsha - npshr if npsha > 0 and npshr > 0 else None
+            if npsh_margin is not None and npsh_margin <= 0:
+                verdict = 'نامناسب از نظر NPSH: NPSHA باید از NPSHR بیشتر باشد.'
+            elif npsh_margin is not None and npsh_margin < 0.5:
+                verdict = 'نیازمند بررسی: حاشیه NPSH کم است و باید شرایط مکش با دیتاشیت سازنده کنترل شود.'
+            else:
+                verdict = 'از نظر Q/H و توان، این نقطه برای مقایسه پمپ‌ها آماده است؛ منحنی سازنده و BEP را حتماً بررسی کنید.'
+            result = {'q': q, 'head': head, 'power': round(power_kw, 2), 'npsh_margin': None if npsh_margin is None else round(npsh_margin, 2), 'verdict': verdict}
+        except Exception:
+            error = 'همه مقادیر عددی را صحیح و بزرگ‌تر از صفر وارد کنید.'
+    return render_template('facility_pump_selection.html', result=result, error=error)
+
+@app.route('/facility-calculations', methods=['GET','POST'])
+def facility_calculations():
+    result=None; error=None; selected=request.form.get('calc','pump_head') if request.method=='POST' else request.args.get('calc','pump_head')
+    try:
+        def f(name, default=0.0): return float(request.form.get(name,default))
+        if request.method=='POST':
+            if selected=='pump_head': result={'label':'هد کل','value':round(f('hstatic')+f('hfriction')+f('hminor')+f('hresidual'),3),'unit':'m'}
+            elif selected=='pump_power':
+                q=f('q_m3s'); rho=f('rho',1000); h=f('head'); eta=f('eta',0.7)/100
+                result={'label':'توان هیدرولیکی/ورودی تقریبی','value':round(rho*9.81*q*h/eta/1000,3),'unit':'kW'}
+            elif selected=='pipe_diameter': result={'label':'قطر داخلی تقریبی','value':round(math.sqrt(4*f('q_m3s')/(math.pi*f('velocity')))*1000,2),'unit':'mm'}
+            elif selected=='flow_velocity': result={'label':'سرعت جریان','value':round(4*f('q_m3s')/(math.pi*(f('diameter_mm')/1000)**2),3),'unit':'m/s'}
+            elif selected=='pressure_drop': result={'label':'افت فشار','value':round(f('friction')*f('length')/(f('diameter')/1000)*(f('rho',1000)*f('velocity')**2/2),2),'unit':'Pa'}
+            elif selected=='heat_load': result={'label':'بار حرارتی','value':round(f('mass_flow')*f('cp',4.186)*f('delta_t'),3),'unit':'kW'}
+            elif selected=='airflow_ach': result={'label':'دبی هوا','value':round(f('ach')*f('volume')/3600,3),'unit':'m³/s'}
+            elif selected=='chiller_tr': result={'label':'ظرفیت چیلر','value':round(f('kw')/3.517,3),'unit':'TR'}
+            elif selected=='tank_volume': result={'label':'حجم مخزن','value':round(f('length')*f('width')*f('height'),3),'unit':'m³'}
+            elif selected=='water_flow': result={'label':'دبی','value':round(f('m3h')/3.6,3),'unit':'L/s'}
+            elif selected=='compressor_air': result={'label':'ظرفیت پیشنهادی کمپرسور','value':round(f('consumption')*(1+f('reserve',20)/100),3),'unit':'m³/min'}
+    except Exception as e: error='مقادیر ورودی را بررسی کنید.'
+    conn=get_db(); calculators=conn.execute('SELECT * FROM facility_calculators ORDER BY id').fetchall(); conn.close()
+    return render_template('facility_calculations.html', calculators=calculators, selected=selected, result=result, error=error)
+
 
 if __name__=="__main__":
 

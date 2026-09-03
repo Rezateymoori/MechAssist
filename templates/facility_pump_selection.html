@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-hero facility-hero">
+  <div><span class="eyebrow">PUMP ENGINEERING</span><h1>💧 انتخاب پمپ مناسب</h1><p>از نیاز سیستم تا نقطه کاری، توان و کنترل اولیه NPSH.</p></div>
+</div>
+<div class="detail">
+  <div class="alert-box"><b>روش کار:</b> ابتدا دبی و هد کل را از طراحی سیستم به‌دست آورید؛ سپس سیال و شرایط مکش، راندمان و NPSH را کنترل و نقطه کاری را روی منحنی واقعی سازنده مقایسه کنید.</div>
+  <form method="post">
+    <div class="form-grid">
+      <label>دبی طراحی Q (m³/h)<input name="q" type="number" step="any" required></label>
+      <label>هد کل H (m)<input name="head" type="number" step="any" required></label>
+      <label>چگالی سیال (kg/m³)<input name="rho" value="1000" type="number" step="any"></label>
+      <label>راندمان پمپ (٪)<input name="eta" value="70" type="number" step="any"></label>
+      <label>NPSHA (m)<input name="npsha" type="number" step="any" placeholder="اختیاری"></label>
+      <label>NPSHR (m)<input name="npshr" type="number" step="any" placeholder="اختیاری"></label>
+    </div>
+    <button class="primary-btn" type="submit">بررسی نقطه کاری</button>
+  </form>
+  {% if error %}<div class="alert-box">{{ error }}</div>{% endif %}
+  {% if result %}
+  <div class="result-box"><span>توان ورودی تقریبی</span><strong>{{result.power}} kW</strong></div>
+  <div class="knowledge-section"><h2>نتیجه انتخاب اولیه</h2><ul>
+    <li>نقطه طراحی: <b>{{result.q}} m³/h @ {{result.head}} m</b></li>
+    <li>این نقطه را روی منحنی Q-H پمپ‌های پیشنهادی سازنده قرار دهید و راندمان، توان و محدوده کار را مقایسه کنید.</li>
+    {% if result.npsh_margin is not none %}<li>حاشیه NPSH محاسبه‌شده: <b>{{result.npsh_margin}} m</b></li>{% endif %}
+    <li>{{result.verdict}}</li>
+  </ul></div>
+  {% endif %}
+  <div class="knowledge-section"><h2>چک‌لیست انتخاب پمپ</h2><ol>
+    <li><b>Q:</b> دبی نرمال، حداقل، حداکثر و دبی طراحی را مشخص کنید.</li>
+    <li><b>H:</b> اختلاف ارتفاع/فشار + افت اصطکاکی + افت موضعی + فشار موردنیاز مصرف‌کننده.</li>
+    <li><b>سیال:</b> دما، چگالی، ویسکوزیته، مواد جامد و خورندگی.</li>
+    <li><b>منحنی:</b> Q-H، راندمان، توان و NPSHR را همزمان ببینید.</li>
+    <li><b>موتور:</b> توان موتور، شرایط برق، VFD و شرایط راه‌اندازی.</li>
+    <li><b>مکش:</b> NPSHA را در بدترین حالت دما و حداکثر دبی کنترل کنید.</li>
+    <li><b>کنترل:</b> throttling، bypass یا VFD را بر اساس رفتار سیستم انتخاب کنید.</li>
+    <li><b>رزرو:</b> برای سرویس‌های بحرانی، duty/standby یا چند پمپ موازی را بررسی کنید.</li>
+  </ol></div>
+</div>
+{% endblock %}
