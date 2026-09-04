@@ -123,6 +123,29 @@
 {% endif %}
 
 
+<!-- Selection Guidelines -->
+
+{% if knowledge.selection_guidelines %}
+
+<div class="knowledge-card">
+
+    <h2>🎯 راهنمای انتخاب و طراحی</h2>
+
+    <ul class="maintenance-list">
+
+        {% for item in knowledge.selection_guidelines %}
+
+        <li>📌 {{ item }}</li>
+
+        {% endfor %}
+
+    </ul>
+
+</div>
+
+{% endif %}
+
+
 <!-- Failure Modes -->
 
 {% if knowledge.failure_modes %}
@@ -229,6 +252,29 @@
     </div>
 
     {% endfor %}
+
+</div>
+
+{% endif %}
+
+
+<!-- Standards -->
+
+{% if knowledge.standards %}
+
+<div class="knowledge-card">
+
+    <h2>📊 استانداردها و مراجع انتخاب</h2>
+
+    <ul class="maintenance-list">
+
+        {% for standard in knowledge.standards %}
+
+        <li>📘 {{ standard }}</li>
+
+        {% endfor %}
+
+    </ul>
 
 </div>
 
