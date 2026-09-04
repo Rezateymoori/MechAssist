@@ -619,6 +619,37 @@ def bearing_calculator():
         result=result
     )
 
+@app.route("/mechanical-calculator/<component>", methods=["GET", "POST"])
+def mechanical_calculator(component):
+    configs = {
+        "belt": {"title":"محاسبه‌گر تسمه", "fields":[{"name":"D","label":"قطر پولی (m)"},{"name":"rpm","label":"دور پولی (rpm)"}], "mode":"speed"},
+        "pulley": {"title":"محاسبه‌گر پولی", "fields":[{"name":"n1","label":"دور پولی محرک (rpm)"},{"name":"D1","label":"قطر پولی محرک (m)"},{"name":"D2","label":"قطر پولی متحرک (m)"}], "mode":"pulley"},
+        "chain": {"title":"محاسبه‌گر زنجیر", "fields":[{"name":"p","label":"گام زنجیر (mm)"},{"name":"z","label":"تعداد دندانه چرخ زنجیر"},{"name":"rpm","label":"دور (rpm)"}], "mode":"chain"},
+        "seal": {"title":"محاسبه‌گر آب‌بند", "fields":[{"name":"d","label":"قطر شفت در محل آب‌بندی (mm)"},{"name":"rpm","label":"دور شفت (rpm)"}], "mode":"seal"}
+    }
+    cfg = configs.get(component)
+    if not cfg:
+        return "محاسبه‌گر مورد نظر پیدا نشد", 404
+    result = None
+    if request.method == "POST":
+        try:
+            vals = {k: float(request.form[k]) for k in [f["name"] for f in cfg["fields"]]}
+            if any(v <= 0 for v in vals.values()):
+                result = {"error":"همه مقادیر باید بزرگ‌تر از صفر باشند."}
+            elif cfg["mode"] == "speed":
+                import math
+                result = {"سرعت خطی تسمه (m/s)": round(math.pi * vals["D"] * vals["rpm"] / 60, 4)}
+            elif cfg["mode"] == "pulley":
+                result = {"سرعت پولی متحرک (rpm)": round(vals["n1"] * vals["D1"] / vals["D2"], 3), "نسبت انتقال n1/n2": round(vals["D2"] / vals["D1"], 4)}
+            elif cfg["mode"] == "chain":
+                result = {"سرعت زنجیر (m/s)": round((vals["p"] / 1000) * vals["z"] * vals["rpm"] / 60, 4), "قطر گام چرخ زنجیر (mm)": round((vals["p"] / 1000) / __import__('math').sin(__import__('math').pi / vals["z"]) * 1000, 3)}
+            elif cfg["mode"] == "seal":
+                result = {"سرعت محیطی شفت در محل آب‌بندی (m/s)": round(__import__('math').pi * (vals["d"] / 1000) * vals["rpm"] / 60, 4)}
+        except (ValueError, KeyError, ZeroDivisionError):
+            result = {"error":"ورودی‌ها معتبر نیستند."}
+    return render_template("mechanical_calculator.html", title=cfg["title"], fields=cfg["fields"], result=result)
+
+
 @app.route("/components/<component>")
 def component_collection(component):
     """Unified collection for each mechanical part: database, knowledge, calculations and standards."""
@@ -627,10 +658,10 @@ def component_collection(component):
         "gearbox": {"title":"گیربکس", "icon":"⚙", "knowledge":"/knowledge/gearbox", "database":"/gearboxes", "calculator":None, "standard":"/standards"},
         "coupling": {"title":"کوپلینگ", "icon":"🔗", "knowledge":"/knowledge/coupling", "database":"/couplings", "calculator":None, "standard":"/standards"},
         "shaft": {"title":"شفت", "icon":"🔧", "knowledge":"/knowledge/shaft", "database":"/search?q=شفت", "calculator":None, "standard":"/standards/keys"},
-        "belt": {"title":"تسمه", "icon":"🛞", "knowledge":"/knowledge/belt", "database":"/search?q=تسمه", "calculator":None, "standard":"/standards"},
-        "chain": {"title":"زنجیر صنعتی", "icon":"⛓", "knowledge":"/knowledge/chain", "database":"/search?q=زنجیر", "calculator":None, "standard":"/standards"},
-        "pulley": {"title":"پولی", "icon":"🛞", "knowledge":"/knowledge/pulley", "database":"/search?q=پولی", "calculator":None, "standard":"/standards"},
-        "seal": {"title":"آب‌بندها", "icon":"⭕", "knowledge":"/knowledge/seal", "database":"/search?q=آب%20بند", "calculator":None, "standard":"/standards"},
+        "belt": {"title":"تسمه", "icon":"🛞", "knowledge":"/knowledge/belt", "database":"/search?q=تسمه", "calculator":"/mechanical-calculator/belt", "standard":"/standards"},
+        "chain": {"title":"زنجیر صنعتی", "icon":"⛓", "knowledge":"/knowledge/chain", "database":"/search?q=زنجیر", "calculator":"/mechanical-calculator/chain", "standard":"/standards"},
+        "pulley": {"title":"پولی", "icon":"🛞", "knowledge":"/knowledge/pulley", "database":"/search?q=پولی", "calculator":"/mechanical-calculator/pulley", "standard":"/standards"},
+        "seal": {"title":"آب‌بندها", "icon":"⭕", "knowledge":"/knowledge/seal", "database":"/search?q=آب%20بند", "calculator":"/mechanical-calculator/seal", "standard":"/standards"},
     }
     item = collections.get(component)
     if not item:
@@ -914,6 +945,21 @@ FACILITY_ICONS = {
     'valve':'🔧','heat_exchanger':'♨️','tank':'🛢️','pipe':'➰','fire_fighting':'🚒',
     'water_treatment':'🚰','cooling_tower':'🏭'
 }
+
+@app.route('/facility-collection/<category>')
+def facility_collection(category):
+    conn=get_db()
+    cat=conn.execute('SELECT * FROM facility_categories WHERE slug=?',(category,)).fetchone()
+    conn.close()
+    if not cat:
+        return 'دسته تأسیسات پیدا نشد',404
+    return render_template(
+        'facility_collection.html', category=cat,
+        db_url=f'/facilities/{category}',
+        knowledge_url=f'/facility-knowledge/{category}',
+        calc_url='/facility-calculations',
+        standards_url='/facility-standards'
+    )
 
 @app.route('/facilities')
 def facilities_home():
