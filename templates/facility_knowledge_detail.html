@@ -1,0 +1,2 @@
+{% extends "layout.html" %}
+{% block content %}<div class="detail"><a href="/facility-knowledge">← بازگشت</a><h1>{{knowledge.title}}</h1><p class="lead">{{knowledge.intro}}</p>{% for s in knowledge.sections %}<section class="knowledge-section"><h2>{{s.title}}</h2><ul>{% for x in s["items"] %}<li>{{x}}</li>{% endfor %}</ul></section>{% endfor %}</div>{% endblock %}

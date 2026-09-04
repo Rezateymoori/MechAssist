@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-hero"><div><span class="eyebrow">COMPONENT STANDARDS</span><h1>📊 {{ title }}</h1><p>فقط استانداردهای مرتبط با همین قطعه در این صفحه نمایش داده می‌شود.</p></div></div>
+<div class="equipment-grid">
+{% for code in codes %}<div class="equipment-card"><div class="icon">📘</div><h2>{{ code }}</h2><p>مرجع استاندارد مرتبط با طراحی، ابعاد، انتخاب، ساخت یا بازرسی.</p></div>{% endfor %}
+</div>
+{% endblock %}
