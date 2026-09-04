@@ -1,7 +1,0 @@
-{% extends "layout.html" %}
-{% block content %}
-<div class="page-hero facility-hero"><div><span class="eyebrow">FACILITIES</span><h1>🏢 مرکز تأسیسات مکانیکی</h1><p>بانک تجهیزات، دانش فنی، استانداردها و محاسبات کاربردی تأسیسات ساختمان و صنعت.</p></div><div><a class="primary-btn" href="/facility-calculations">🧮 محاسبات تأسیسات</a> <a class="primary-btn" href="/facility-pump-selection">💧 انتخاب پمپ</a></div></div>
-<div class="stats"><div class="stat"><h3>{{ total }}</h3><span>تجهیز و رکورد فنی</span></div><div class="stat"><h3>{{ standards_count }}</h3><span>استاندارد و مرجع</span></div><div class="stat"><h3>{{ calc_count }}</h3><span>ماشین‌حساب مهندسی</span></div></div>
-<h2 class="section-title">دسته‌بندی تجهیزات</h2><div class="equipment-grid">{% for c in categories %}<a class="equipment-card facility-card" href="/facilities/{{ c.slug }}"><div class="facility-icon">{{ c.icon }}</div><h2>{{ c.name_fa }}</h2><p>{{ c.description }}</p><strong>{{ c.count }} رکورد ←</strong></a>{% endfor %}</div>
-<div class="quick-links"><a href="/facility-systems">🏗️ سیستم‌های تأسیسات</a><a href="/facility-knowledge">📚 دانشنامه کامل تأسیسات</a><a href="/facility-standards">📊 استانداردهای تأسیسات</a><a href="/facility-calculations">🧮 محاسبات تأسیسات</a><a href="/facility-pump-selection">💧 راهنمای انتخاب پمپ</a></div>
-{% endblock %}

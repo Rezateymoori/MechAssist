@@ -1,2 +1,0 @@
-{% extends "layout.html" %}
-{% block content %}<div class="page-hero"><div><span class="eyebrow">KNOWLEDGE BASE</span><h1>📚 دانشنامه تأسیسات</h1><p>اصول انتخاب، طراحی، بهره‌برداری و عیب‌یابی تجهیزات و سیستم‌های تأسیسات.</p></div></div><div class="equipment-grid">{% for k in items %}<a class="equipment-card facility-card" href="/facility-knowledge/{{k.slug}}"><div class="facility-icon">📚</div><h2>{{k.title}}</h2><p>{{k.intro}}</p><strong>مطالعه ←</strong></a>{% endfor %}</div>{% endblock %}

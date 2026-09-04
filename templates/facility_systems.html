@@ -1,2 +1,0 @@
-{% extends "layout.html" %}
-{% block content %}<div class="page-hero"><div><span class="eyebrow">SYSTEMS</span><h1>🏗️ سیستم‌های تأسیسات</h1><p>نمای کلی زیرسیستم‌های اصلی برای مطالعه، طراحی اولیه و عیب‌یابی.</p></div></div><div class="equipment-grid">{% for s in systems %}<div class="equipment-card facility-card"><div class="facility-icon">🏗️</div><h2>{{s.name_fa}}</h2><p>{{s.description}}</p><strong>سیستم تأسیسات ←</strong></div>{% endfor %}</div>{% endblock %}
