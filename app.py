@@ -654,19 +654,55 @@ def mechanical_calculator(component):
 def component_collection(component):
     """Unified collection for each mechanical part: database, knowledge, calculations and standards."""
     collections = {
-        "bearing": {"title":"برینگ و یاتاقان", "icon":"🔩", "knowledge":"/knowledge/bearing", "database":"/bearings", "calculator":"/bearing/calculator", "standard":"/standards/bearings"},
-        "gearbox": {"title":"گیربکس", "icon":"⚙", "knowledge":"/knowledge/gearbox", "database":"/gearboxes", "calculator":None, "standard":"/standards"},
-        "coupling": {"title":"کوپلینگ", "icon":"🔗", "knowledge":"/knowledge/coupling", "database":"/couplings", "calculator":None, "standard":"/standards"},
-        "shaft": {"title":"شفت", "icon":"🔧", "knowledge":"/knowledge/shaft", "database":"/search?q=شفت", "calculator":None, "standard":"/standards/keys"},
-        "belt": {"title":"تسمه", "icon":"🛞", "knowledge":"/knowledge/belt", "database":"/search?q=تسمه", "calculator":"/mechanical-calculator/belt", "standard":"/standards"},
-        "chain": {"title":"زنجیر صنعتی", "icon":"⛓", "knowledge":"/knowledge/chain", "database":"/search?q=زنجیر", "calculator":"/mechanical-calculator/chain", "standard":"/standards"},
-        "pulley": {"title":"پولی", "icon":"🛞", "knowledge":"/knowledge/pulley", "database":"/search?q=پولی", "calculator":"/mechanical-calculator/pulley", "standard":"/standards"},
-        "seal": {"title":"آب‌بندها", "icon":"⭕", "knowledge":"/knowledge/seal", "database":"/search?q=آب%20بند", "calculator":"/mechanical-calculator/seal", "standard":"/standards"},
+        "bearing": {"title":"برینگ و یاتاقان", "icon":"🔩", "knowledge":"/knowledge/bearing", "database":"/bearings", "calculator":"/bearing/calculator", "standard":"/component-standards/bearing"},
+        "gearbox": {"title":"گیربکس", "icon":"⚙", "knowledge":"/knowledge/gearbox", "database":"/gearboxes", "calculator":None, "standard":"/component-standards/{component}"},
+        "coupling": {"title":"کوپلینگ", "icon":"🔗", "knowledge":"/knowledge/coupling", "database":"/couplings", "calculator":None, "standard":"/component-standards/{component}"},
+        "shaft": {"title":"شفت", "icon":"🔧", "knowledge":"/knowledge/shaft", "database":"/search?q=شفت", "calculator":None, "standard":"/component-standards/shaft"},
+        "belt": {"title":"تسمه", "icon":"🛞", "knowledge":"/knowledge/belt", "database":"/search?q=تسمه", "calculator":"/mechanical-calculator/belt", "standard":"/component-standards/{component}"},
+        "chain": {"title":"زنجیر صنعتی", "icon":"⛓", "knowledge":"/knowledge/chain", "database":"/search?q=زنجیر", "calculator":"/mechanical-calculator/chain", "standard":"/component-standards/{component}"},
+        "pulley": {"title":"پولی", "icon":"🛞", "knowledge":"/knowledge/pulley", "database":"/search?q=پولی", "calculator":"/mechanical-calculator/pulley", "standard":"/component-standards/{component}"},
+        "seal": {"title":"آب‌بندها", "icon":"⭕", "knowledge":"/knowledge/seal", "database":"/search?q=آب%20بند", "calculator":"/mechanical-calculator/seal", "standard":"/component-standards/{component}"},
     }
     item = collections.get(component)
     if not item:
         return "مجموعه قطعه پیدا نشد", 404
+    item = dict(item)
+    item["standard"] = item["standard"].replace("{component}", component)
     return render_template("component_collection.html", item=item)
+
+
+MECHANICAL_STANDARD_INFO = {
+    "bearing": ("استانداردهای برینگ و یاتاقان", ["ISO 15", "ISO 281", "ISO 492", "ISO 199", "ISO 5753", "DIN 625"]),
+    "gearbox": ("استانداردهای گیربکس", ["ISO 6336", "ISO 10825", "AGMA 6011", "AGMA 9000", "DIN 3990"]),
+    "coupling": ("استانداردهای کوپلینگ", ["ISO 14691", "API 671", "DIN 740", "AGMA 9000"]),
+    "shaft": ("استانداردهای شفت و خار", ["DIN 6885", "ISO 286", "ISO 2768", "DIN 748"]),
+    "belt": ("استانداردهای تسمه", ["ISO 4184", "ISO 1813", "ISO 1081", "DIN 2215", "DIN 2217", "ISO 5296"]),
+    "chain": ("استانداردهای زنجیر صنعتی", ["ISO 606", "ISO 1275", "DIN 8187", "DIN 8188", "ANSI B29.1"]),
+    "pulley": ("استانداردهای پولی و شیو", ["ISO 4183", "ISO 4184", "DIN 2211", "DIN 2217", "ISO 1081"]),
+    "seal": ("استانداردهای آب‌بند", ["ISO 6194", "ISO 3601", "DIN 3760", "DIN 3771", "ISO 16589"]),
+}
+
+@app.route("/component-standards/<component>")
+def component_standards(component):
+    info = MECHANICAL_STANDARD_INFO.get(component)
+    if not info:
+        return "استانداردهای قطعه پیدا نشد", 404
+    title, codes = info
+    return render_template("component_standards.html", title=title, codes=codes, component=component)
+
+
+# مجموعه مستقل تأسیسات، مشابه قطعات مکانیکی
+@app.route("/facility-collection/<category>")
+def facility_collection(category):
+    with open(FACILITIES_SEED, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    cat = next((x for x in data.get("categories", []) if x[0] == category), None)
+    if not cat:
+        return "دسته تأسیسات پیدا نشد", 404
+    slug, title, description, subtypes = cat
+    return render_template("facility_collection.html", item={
+        "slug": slug, "title": title, "icon": FACILITY_ICONS.get(slug, "🏢"), "description": description, "subtypes": subtypes
+    })
 
 
 @app.route("/knowledge/<equipment_type>")
