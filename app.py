@@ -946,21 +946,6 @@ FACILITY_ICONS = {
     'water_treatment':'🚰','cooling_tower':'🏭'
 }
 
-@app.route('/facility-collection/<category>')
-def facility_collection(category):
-    conn=get_db()
-    cat=conn.execute('SELECT * FROM facility_categories WHERE slug=?',(category,)).fetchone()
-    conn.close()
-    if not cat:
-        return 'دسته تأسیسات پیدا نشد',404
-    return render_template(
-        'facility_collection.html', category=cat,
-        db_url=f'/facilities/{category}',
-        knowledge_url=f'/facility-knowledge/{category}',
-        calc_url='/facility-calculations',
-        standards_url='/facility-standards'
-    )
-
 @app.route('/facilities')
 def facilities_home():
     conn=get_db()
@@ -1020,15 +1005,41 @@ def facility_knowledge_detail(slug):
     if not k: return 'دانشنامه تأسیسات پیدا نشد',404
     return render_template('facility_knowledge_detail.html', knowledge=k, slug=slug)
 
+FACILITY_STANDARD_CODES = {
+    'pump': ['API 610','API 674','ISO 9906','NFPA 20'],
+    'fan': ['ISO 5801','ASHRAE 62.1','ASHRAE 55','ASHRAE 90.1'],
+    'compressor': ['API 617','ISO 8573','ISO 4126','ASHRAE 90.1'],
+    'chiller': ['AHRI 550/590','EN 378','IEC 60335-2-40','ASHRAE 90.1'],
+    'boiler': ['ISO 4126','ASHRAE 90.1','EN 13445'],
+    'hvac': ['ASHRAE 62.1','ASHRAE 55','ASHRAE 90.1','IEC 60335-2-40'],
+    'valve': ['ISO 4126','ASME B31.9','ASME B16.5'],
+    'heat_exchanger': ['ASME B31.9','ASME B16.5','ISO 4126','EN 13445'],
+    'tank': ['EN 13445','API 650','NFPA 22','ISO 12944'],
+    'pipe': ['ASME B31.9','ASME B16.5','ASME B16.9','NFPA 24'],
+    'fire_fighting': ['NFPA 13','NFPA 20','NFPA 25','NFPA 72','NFPA 22','NFPA 24','EN 12845'],
+    'water_treatment': ['ASME B31.9','ASME B16.5','ISO 4126','ISO 12944'],
+    'cooling_tower': ['ASHRAE 90.1','ASHRAE 62.1','ASHRAE 55','ISO 12944'],
+}
+
 @app.route('/facility-standards')
 def facility_standards():
     q=request.args.get('q','').strip()
+    category=request.args.get('category','').strip()
     conn=get_db()
+    params=[]
+    clauses=[]
+    if category in FACILITY_STANDARD_CODES:
+        placeholders=','.join(['?']*len(FACILITY_STANDARD_CODES[category]))
+        clauses.append(f'code IN ({placeholders})')
+        params.extend(FACILITY_STANDARD_CODES[category])
     if q:
-        rows=conn.execute('SELECT * FROM facility_standards WHERE code LIKE ? OR name LIKE ? OR description LIKE ? ORDER BY id',(f'%{q}%',f'%{q}%',f'%{q}%')).fetchall()
-    else: rows=conn.execute('SELECT * FROM facility_standards ORDER BY id').fetchall()
+        clauses.append('(code LIKE ? OR name LIKE ? OR description LIKE ?)')
+        params.extend([f'%{q}%']*3)
+    where=(' WHERE '+ ' AND '.join(clauses)) if clauses else ''
+    rows=conn.execute('SELECT * FROM facility_standards'+where+' ORDER BY id', params).fetchall()
+    cat=conn.execute('SELECT * FROM facility_categories WHERE slug=?',(category,)).fetchone() if category else None
     conn.close()
-    return render_template('facility_standards.html', rows=rows, search=q)
+    return render_template('facility_standards.html', rows=rows, search=q, category=cat, category_slug=category)
 
 @app.route('/facility-pump-selection', methods=['GET','POST'])
 def facility_pump_selection():
