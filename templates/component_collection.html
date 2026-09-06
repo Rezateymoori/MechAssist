@@ -8,5 +8,6 @@
   <a class="equipment-card" href="{{ item.knowledge }}"><div class="icon">📚</div><h2>دانشنامه</h2><p>تعریف، انواع، کاربردها، انتخاب، نگهداری و عیب‌یابی.</p><strong>مطالعه دانشنامه ←</strong></a>
   {% if item.calculator %}<a class="equipment-card" href="{{ item.calculator }}"><div class="icon">🧮</div><h2>محاسبات</h2><p>ابزارهای محاسباتی مرتبط با این قطعه.</p><strong>انجام محاسبه ←</strong></a>{% else %}<div class="equipment-card"><div class="icon">🧮</div><h2>محاسبات</h2><p>ابزار اختصاصی این قطعه هنوز در سامانه تعریف نشده است.</p><strong>به‌زودی</strong></div>{% endif %}
   <a class="equipment-card" href="{{ item.standard }}"><div class="icon">📊</div><h2>جداول استاندارد</h2><p>ابعاد، تلرانس‌ها، رزوه‌ها و سایر مراجع استاندارد مرتبط.</p><strong>مشاهده جداول ←</strong></a>
+  {% if item.code_reader %}<a class="equipment-card" href="{{ item.code_reader }}"><div class="icon">🔍</div><h2>نحوه خواندن کد برینگ SKF</h2><p>آموزش ساختار کد، سری، قطر داخلی و پسوندهای مهم SKF به همراه ابزار تجزیه کد.</p><strong>ورود به آموزش ←</strong></a>{% endif %}
 </div>
 {% endblock %}

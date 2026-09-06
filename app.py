@@ -813,7 +813,7 @@ def maintenance_article(section_slug, article_slug):
 def component_collection(component):
     """Unified collection for each mechanical part: database, knowledge, calculations and standards."""
     collections = {
-        "bearing": {"title":"برینگ و یاتاقان", "icon":"🔩", "knowledge":"/knowledge/bearing", "database":"/bearings", "calculator":"/bearing/calculator", "standard":"/component-standards/bearing"},
+        "bearing": {"title":"برینگ و یاتاقان", "icon":"🔩", "knowledge":"/knowledge/bearing", "database":"/bearings", "calculator":"/bearing/calculator", "standard":"/component-standards/bearing", "code_reader":"/bearing/code-reader"},
         "gearbox": {"title":"گیربکس", "icon":"⚙", "knowledge":"/knowledge/gearbox", "database":"/gearboxes", "calculator":None, "standard":"/component-standards/{component}"},
         "coupling": {"title":"کوپلینگ", "icon":"🔗", "knowledge":"/knowledge/coupling", "database":"/couplings", "calculator":None, "standard":"/component-standards/{component}"},
         "shaft": {"title":"شفت", "icon":"🔧", "knowledge":"/knowledge/shaft", "database":"/search?q=شفت", "calculator":None, "standard":"/component-standards/shaft"},
