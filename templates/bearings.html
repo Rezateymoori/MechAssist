@@ -2,7 +2,7 @@
 {% block content %}
 <div class="page-title"><p><a class="table-link" href="{{ url_for('bearing_code_reader') }}">🔍 مفسر و آموزش خواندن کد برینگ SKF</a></p>
   <h2>🔩 بانک اطلاعاتی جامع برینگ SKF</h2>
-  <p>جستجو بر اساس کد، نوع، سری و قطر داخلی • {{ bearings|length }} نتیجه</p>
+  <p>جدول سری‌ها و سایزهای استاندارد ثبت‌شده • {{ total_count }} نتیجه ({{ skf_count }} رکورد SKF)</p>
 </div>
 
 <form class="bearing-filter-panel" method="GET" action="{{ url_for('bearings') }}">
@@ -37,7 +37,7 @@
   </div>
 </form>
 
-<div class="bearing-note">ℹ️ ابعاد سری‌های استاندارد در بانک ثبت شده‌اند. مقادیر بار و سرعت برای انتخاب نهایی باید با پسوند دقیق محصول در کاتالوگ/صفحه رسمی SKF کنترل شوند.</div>
+<div class="bearing-note"><strong>📚 جدول ابعادی کامل‌تر:</strong> سری‌های استاندارد موجود شامل 60، 62، 63، 68، 69، 70، 72، NU، NJ، NUP، 302 و 303 به‌همراه خانواده‌های موجود دیگر هستند. هر ردیف d × D × B/T را نمایش می‌دهد. <strong>توجه:</strong> این بخش برای ابعاد مرزی استاندارد و نام‌گذاری است؛ ظرفیت بار، سرعت و پسوندهای دقیق باید هنگام انتخاب نهایی با کاتالوگ رسمی SKF همان محصول کنترل شوند.</div>
 
 {% if bearings %}
 <div class="bearing-table-wrap">

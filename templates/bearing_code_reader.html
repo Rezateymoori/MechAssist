@@ -1,34 +1,104 @@
 {% extends "layout.html" %}
 {% block content %}
 <div class="page-title">
-<h2>🔍 مفسر و آموزش خواندن کد برینگ SKF</h2>
-<p>کد درج‌شده روی برینگ را وارد کنید تا بخش‌های اصلی آن تحلیل شود.</p>
+  <h2>🔍 نحوه خواندن کد درج‌شده روی برینگ SKF</h2>
+  <p>کد حک‌شده روی رینگ برینگ را وارد کنید تا کد پایه، نوع، سری، قطر داخلی و پسوندهای آن تحلیل شود.</p>
 </div>
+
 <form class="bearing-filter-panel" method="POST">
-<div class="filter-field wide"><label>کد برینگ</label><input name="code" value="{{ code }}" placeholder="مثلاً 6205-2RS1/C3 یا NU220ECP"></div>
-<div class="filter-actions"><button type="submit">🔍 تحلیل کد</button></div>
+  <div class="filter-field wide"><label>کد کامل درج‌شده روی برینگ</label><input name="code" value="{{ code }}" placeholder="مثلاً SKF 6205-2RS1/C3 یا NU 220 ECP"></div>
+  <div class="filter-actions"><button type="submit">🔍 تجزیه و تحلیل کد</button></div>
 </form>
+
 {% if result %}
 <div class="search-panel">
-<h3>{{ result.normalized }}</h3>
-<p><strong>کد پایه:</strong> {{ result.basic }}</p>
-<p><strong>نوع:</strong> {{ result.type }}</p>
-<p><strong>سری:</strong> {{ result.series }}</p>
-<p><strong>کد قطر داخلی:</strong> {{ result.bore_code }}</p>
-<p><strong>قطر داخلی:</strong> {{ result.bore_mm ~ ' mm' if result.bore_mm is not none else 'نیازمند بررسی ویژه' }}</p>
-{% if result.suffixes %}
-<h3>پسوندها</h3><ul>{% for x in result.suffixes %}<li><strong>{{ x.code }}</strong> — {{ x.meaning }}</li>{% endfor %}</ul>{% endif %}
+  <h3>نتیجه تحلیل: {{ result.normalized }}</h3>
+  <table class="bearing-table"><tbody>
+    <tr><th>کد پایه</th><td>{{ result.basic }}</td></tr>
+    <tr><th>خانواده / نوع</th><td>{{ result.type }}</td></tr>
+    <tr><th>سری ابعادی</th><td>{{ result.series }}</td></tr>
+    <tr><th>کد قطر داخلی</th><td>{{ result.bore_code }}</td></tr>
+    <tr><th>قطر داخلی تقریبی</th><td>{{ result.bore_mm ~ ' mm' if result.bore_mm is not none else 'نیازمند بررسی کاتالوگ خانواده دقیق' }}</td></tr>
+  </tbody></table>
+  {% if result.suffixes %}
+  <h3>معنی پسوندهای درج‌شده</h3>
+  <ul>{% for x in result.suffixes %}<li><strong>{{ x.code }}</strong> — {{ x.meaning }}</li>{% endfor %}</ul>
+  {% endif %}
 </div>
 {% endif %}
+
 <div class="search-panel">
-<h3>📚 راهنمای سریع خواندن کد</h3>
-<p>در بسیاری از برینگ‌های استاندارد، کد پایه نوع برینگ، سری ابعادی و اندازه سوراخ را مشخص می‌کند. دو رقم پایانی معمولاً کد قطر داخلی هستند؛ برای 04 و بالاتر، مقدار کد × 5 میلی‌متر است.</p>
-<table class="bearing-table"><thead><tr><th>کد</th><th>قطر داخلی</th></tr></thead>
-<tbody><tr><td>00</td><td>10 mm</td></tr><tr><td>01</td><td>12 mm</td></tr><tr><td>02</td><td>15 mm</td></tr><tr><td>03</td><td>17 mm</td></tr><tr><td>04</td><td>20 mm</td></tr><tr><td>05</td><td>25 mm</td></tr></tbody></table>
-<p>⚠️ استثناها وجود دارند: قطرهای کمتر از 10 میلی‌متر، قطرهای بزرگ، قطرهای ویژه و خانواده‌هایی مانند رولبرینگ مخروطی و سوزنی ممکن است از الگوی ساده پیروی نکنند.</p>
+<h3>① ساختار کلی کد برینگ</h3>
+<p><strong>نمونه: 6205-2RS1/C3</strong></p>
+<ul>
+<li><strong>6</strong> → نوع اصلی: بلبرینگ شیار عمیق یک‌ردیفه</li>
+<li><strong>2</strong> → سری ابعادی/قطر و عرض</li>
+<li><strong>05</strong> → کد قطر داخلی؛ در این مثال 25 میلی‌متر</li>
+<li><strong>2RS1</strong> → دو آب‌بند لاستیکی تماسی</li>
+<li><strong>C3</strong> → لقی داخلی بیشتر از نرمال</li>
+</ul>
 </div>
+
 <div class="search-panel">
-<h3>نمونه: 6205-2RS1/C3</h3>
-<ul><li>6 → خانواده بلبرینگ شیار عمیق یک‌ردیفه</li><li>205 → سری و اندازه؛ کد 05 معمولاً قطر داخلی 25 mm را نشان می‌دهد</li><li>2RS1 → دو آب‌بند تماسی</li><li>C3 → لقی داخلی بیشتر از نرمال</li></ul>
+<h3>② رقم اول؛ خانواده اصلی برینگ</h3>
+<table class="bearing-table"><thead><tr><th>کد متداول</th><th>معنی</th><th>نمونه</th></tr></thead><tbody>
+<tr><td>6</td><td>بلبرینگ شیار عمیق یک‌ردیفه</td><td>6205</td></tr>
+<tr><td>7</td><td>بلبرینگ تماس زاویه‌ای</td><td>7205</td></tr>
+<tr><td>1 / 2</td><td>خانواده‌های خودتنظیم و رولبرینگ‌ها (بسته به سری دقیق)</td><td>1205، 22205</td></tr>
+<tr><td>NU / NJ / NUP</td><td>رولبرینگ استوانه‌ای با آرایش‌های مختلف لبه راهنما</td><td>NU220، NJ220</td></tr>
+<tr><td>302 / 303 / 320 / 322 / 323</td><td>رولبرینگ مخروطی</td><td>30205، 32210</td></tr>
+<tr><td>511 / 512 / 522 / 523</td><td>برینگ‌های کف‌گرد (خانواده دقیق باید از کاتالوگ کنترل شود)</td><td>51105</td></tr>
+</tbody></table>
 </div>
+
+<div class="search-panel">
+<h3>③ خواندن کد قطر داخلی (Bore Code)</h3>
+<p>در بسیاری از برینگ‌های متریک استاندارد، دو رقم پایانی قطر داخلی را تعیین می‌کنند:</p>
+<table class="bearing-table"><thead><tr><th>کد</th><th>قطر داخلی d</th><th>قاعده</th></tr></thead><tbody>
+<tr><td>00</td><td>10 mm</td><td>استثنای استاندارد</td></tr>
+<tr><td>01</td><td>12 mm</td><td>استثنای استاندارد</td></tr>
+<tr><td>02</td><td>15 mm</td><td>استثنای استاندارد</td></tr>
+<tr><td>03</td><td>17 mm</td><td>استثنای استاندارد</td></tr>
+<tr><td>04</td><td>20 mm</td><td>04 × 5</td></tr>
+<tr><td>05</td><td>25 mm</td><td>05 × 5</td></tr>
+<tr><td>06</td><td>30 mm</td><td>06 × 5</td></tr>
+<tr><td>07</td><td>35 mm</td><td>07 × 5</td></tr>
+<tr><td>08</td><td>40 mm</td><td>08 × 5</td></tr>
+<tr><td>09</td><td>45 mm</td><td>09 × 5</td></tr>
+<tr><td>10</td><td>50 mm</td><td>10 × 5</td></tr>
+<tr><td>12</td><td>60 mm</td><td>12 × 5</td></tr>
+<tr><td>20</td><td>100 mm</td><td>20 × 5</td></tr>
+</tbody></table>
+<p>⚠️ برای برینگ‌های با سوراخ کوچک، سری‌های خاص، قطرهای غیرمتعارف، رولبرینگ‌های مخروطی و سوزنی، قاعده ساده ممکن است کافی نباشد؛ همیشه شماره کامل محصول را بررسی کنید.</p>
+</div>
+
+<div class="search-panel">
+<h3>④ معنی پسوندهای پرکاربرد SKF</h3>
+<table class="bearing-table"><thead><tr><th>پسوند</th><th>معنی کلی</th></tr></thead><tbody>
+<tr><td>2RS1</td><td>دو آب‌بند لاستیکی تماسی</td></tr>
+<tr><td>RS1</td><td>یک آب‌بند لاستیکی تماسی</td></tr>
+<tr><td>2Z / ZZ</td><td>دو محافظ فلزی</td></tr>
+<tr><td>Z</td><td>یک محافظ فلزی</td></tr>
+<tr><td>C3</td><td>لقی داخلی بیشتر از نرمال</td></tr>
+<tr><td>C4</td><td>لقی داخلی بیشتر از C3</td></tr>
+<tr><td>TN9</td><td>قفسه پلیمری تقویت‌شده در خانواده‌های مربوطه</td></tr>
+<tr><td>E</td><td>طراحی داخلی تقویت‌شده/بهینه‌شده در خانواده مربوطه</td></tr>
+<tr><td>J</td><td>قفسه فولادی پرس‌شده در خانواده‌های مربوطه</td></tr>
+<tr><td>W33</td><td>شیار و سوراخ روغن‌کاری در رینگ بیرونی در خانواده‌های مربوطه</td></tr>
+</tbody></table>
+<p><strong>نکته:</strong> معنی دقیق بعضی پسوندها به خانواده محصول وابسته است؛ این جدول برای راهنمای سریع است.</p>
+</div>
+
+<div class="search-panel">
+<h3>⑤ چند مثال عملی</h3>
+<ul>
+<li><strong>SKF 6205</strong> → شیار عمیق، سری 62، کد قطر 05 = قطر داخلی 25 mm.</li>
+<li><strong>SKF 6205-2RS1/C3</strong> → همان برینگ با دو آب‌بند و لقی C3.</li>
+<li><strong>SKF 6310-2Z/C3</strong> → سری 63، کد قطر 10 = قطر داخلی 50 mm، دو محافظ فلزی و لقی C3.</li>
+<li><strong>SKF NU220 ECP</strong> → رولبرینگ استوانه‌ای نوع NU؛ جزئیات طراحی و قفسه با پسوند ECP مشخص می‌شود.</li>
+<li><strong>SKF 30205</strong> → رولبرینگ مخروطی؛ برای ابعاد و پسوندها باید جدول همان خانواده بررسی شود.</li>
+</ul>
+</div>
+
+<div class="bearing-note"><strong>🔧 روش صحیح خواندن نوشته روی برینگ:</strong> ابتدا تمام نوشته حک‌شده روی رینگ را یادداشت کنید، سپس کد پایه را از پسوندها جدا کنید. نوع برینگ و سری را تشخیص دهید، کد قطر داخلی را بررسی کنید و در پایان آب‌بندی، لقی، قفسه و سایر پسوندها را تفسیر نمایید. برای سفارش یا جایگزینی، <strong>کد کامل</strong> را ملاک قرار دهید، نه فقط کد پایه.</div>
 {% endblock %}

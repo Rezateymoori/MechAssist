@@ -126,9 +126,10 @@ def init_facilities_db():
 
 
 BEARINGS_SEED = os.path.join(BASE_DIR, "database", "bearings_data.json")
+BEARINGS_CATALOG_VERSION = "v13-iso-skf-dimensions"
 
 def init_bearings_db():
-    """Create and seed the SKF bearing database automatically on first run."""
+    """Create and refresh the bundled bearing catalogue when its version changes."""
     conn = get_db()
     conn.execute("""
         CREATE TABLE IF NOT EXISTS bearings (
@@ -140,18 +141,21 @@ def init_bearings_db():
             applications TEXT, failures TEXT, equivalent TEXT
         )
     """)
+    conn.execute("CREATE TABLE IF NOT EXISTS app_metadata (key TEXT PRIMARY KEY, value TEXT)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_bearings_series ON bearings(series)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_bearings_type ON bearings(bearing_type)")
-    count = conn.execute("SELECT COUNT(*) FROM bearings").fetchone()[0]
-    if count == 0 and os.path.exists(BEARINGS_SEED):
+    version = conn.execute("SELECT value FROM app_metadata WHERE key='bearings_catalog_version'").fetchone()
+    if (not version or version[0] != BEARINGS_CATALOG_VERSION) and os.path.exists(BEARINGS_SEED):
         with open(BEARINGS_SEED, encoding="utf-8") as f:
             data = json.load(f)
+        conn.execute("DELETE FROM bearings")
         conn.executemany("""
             INSERT INTO bearings (name,brand,bearing_type,series,bore,outer_diameter,width,
             dynamic_load,static_load,max_rpm,clearance,seal,lubrication,applications,failures,equivalent)
             VALUES (:name,:brand,:bearing_type,:series,:bore,:outer_diameter,:width,:dynamic_load,
             :static_load,:max_rpm,:clearance,:seal,:lubrication,:applications,:failures,:equivalent)
         """, data)
+        conn.execute("INSERT OR REPLACE INTO app_metadata(key,value) VALUES('bearings_catalog_version',?)", (BEARINGS_CATALOG_VERSION,))
         conn.commit()
     conn.close()
 
@@ -676,9 +680,11 @@ def bearings():
     sql += " ORDER BY CAST(REPLACE(bore,' mm','') AS INTEGER), series, name"
     rows = conn.execute(sql, params).fetchall()
     bores = conn.execute("SELECT DISTINCT bore FROM bearings ORDER BY CAST(REPLACE(bore,' mm','') AS INTEGER)").fetchall()
+    total_count = len(rows)
+    skf_count = sum(1 for row in rows if row["brand"] == "SKF")
     conn.close()
 
-    return render_template("bearings.html", bearings=rows, search=search, types=types, series_list=series_list, bores=bores, selected_type=bearing_type, selected_series=series, selected_bore=bore)
+    return render_template("bearings.html", bearings=rows, search=search, types=types, series_list=series_list, bores=bores, selected_type=bearing_type, selected_series=series, selected_bore=bore, total_count=total_count, skf_count=skf_count)
 
 
 @app.route("/bearing/<int:id>")
