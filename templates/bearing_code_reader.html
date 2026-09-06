@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-title">
+<h2>🔍 مفسر و آموزش خواندن کد برینگ SKF</h2>
+<p>کد درج‌شده روی برینگ را وارد کنید تا بخش‌های اصلی آن تحلیل شود.</p>
+</div>
+<form class="bearing-filter-panel" method="POST">
+<div class="filter-field wide"><label>کد برینگ</label><input name="code" value="{{ code }}" placeholder="مثلاً 6205-2RS1/C3 یا NU220ECP"></div>
+<div class="filter-actions"><button type="submit">🔍 تحلیل کد</button></div>
+</form>
+{% if result %}
+<div class="search-panel">
+<h3>{{ result.normalized }}</h3>
+<p><strong>کد پایه:</strong> {{ result.basic }}</p>
+<p><strong>نوع:</strong> {{ result.type }}</p>
+<p><strong>سری:</strong> {{ result.series }}</p>
+<p><strong>کد قطر داخلی:</strong> {{ result.bore_code }}</p>
+<p><strong>قطر داخلی:</strong> {{ result.bore_mm ~ ' mm' if result.bore_mm is not none else 'نیازمند بررسی ویژه' }}</p>
+{% if result.suffixes %}
+<h3>پسوندها</h3><ul>{% for x in result.suffixes %}<li><strong>{{ x.code }}</strong> — {{ x.meaning }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}
+<div class="search-panel">
+<h3>📚 راهنمای سریع خواندن کد</h3>
+<p>در بسیاری از برینگ‌های استاندارد، کد پایه نوع برینگ، سری ابعادی و اندازه سوراخ را مشخص می‌کند. دو رقم پایانی معمولاً کد قطر داخلی هستند؛ برای 04 و بالاتر، مقدار کد × 5 میلی‌متر است.</p>
+<table class="bearing-table"><thead><tr><th>کد</th><th>قطر داخلی</th></tr></thead>
+<tbody><tr><td>00</td><td>10 mm</td></tr><tr><td>01</td><td>12 mm</td></tr><tr><td>02</td><td>15 mm</td></tr><tr><td>03</td><td>17 mm</td></tr><tr><td>04</td><td>20 mm</td></tr><tr><td>05</td><td>25 mm</td></tr></tbody></table>
+<p>⚠️ استثناها وجود دارند: قطرهای کمتر از 10 میلی‌متر، قطرهای بزرگ، قطرهای ویژه و خانواده‌هایی مانند رولبرینگ مخروطی و سوزنی ممکن است از الگوی ساده پیروی نکنند.</p>
+</div>
+<div class="search-panel">
+<h3>نمونه: 6205-2RS1/C3</h3>
+<ul><li>6 → خانواده بلبرینگ شیار عمیق یک‌ردیفه</li><li>205 → سری و اندازه؛ کد 05 معمولاً قطر داخلی 25 mm را نشان می‌دهد</li><li>2RS1 → دو آب‌بند تماسی</li><li>C3 → لقی داخلی بیشتر از نرمال</li></ul>
+</div>
+{% endblock %}

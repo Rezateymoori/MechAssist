@@ -123,7 +123,40 @@ def init_facilities_db():
     conn.close()
 
 
+
+
+BEARINGS_SEED = os.path.join(BASE_DIR, "database", "bearings_data.json")
+
+def init_bearings_db():
+    """Create and seed the SKF bearing database automatically on first run."""
+    conn = get_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS bearings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT, brand TEXT, bearing_type TEXT, series TEXT,
+            bore TEXT, outer_diameter TEXT, width TEXT,
+            dynamic_load TEXT, static_load TEXT, max_rpm TEXT,
+            clearance TEXT, seal TEXT, lubrication TEXT,
+            applications TEXT, failures TEXT, equivalent TEXT
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_bearings_series ON bearings(series)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_bearings_type ON bearings(bearing_type)")
+    count = conn.execute("SELECT COUNT(*) FROM bearings").fetchone()[0]
+    if count == 0 and os.path.exists(BEARINGS_SEED):
+        with open(BEARINGS_SEED, encoding="utf-8") as f:
+            data = json.load(f)
+        conn.executemany("""
+            INSERT INTO bearings (name,brand,bearing_type,series,bore,outer_diameter,width,
+            dynamic_load,static_load,max_rpm,clearance,seal,lubrication,applications,failures,equivalent)
+            VALUES (:name,:brand,:bearing_type,:series,:bore,:outer_diameter,:width,:dynamic_load,
+            :static_load,:max_rpm,:clearance,:seal,:lubrication,:applications,:failures,:equivalent)
+        """, data)
+        conn.commit()
+    conn.close()
+
 init_facilities_db()
+init_bearings_db()
 
 
 # صفحه اصلی
@@ -517,46 +550,135 @@ def add_equipment():
 
 
 
+
+BEARING_TYPE_MAP = {
+    "0": "بلبرینگ تماس زاویه‌ای دو ردیفه / شیار پر (بسته به خانواده)",
+    "1": "بلبرینگ خودتنظیم",
+    "2": "رولبرینگ بشکه‌ای یا خانواده‌های مرتبط",
+    "3": "رولبرینگ مخروطی",
+    "4": "بلبرینگ شیار عمیق دو ردیفه",
+    "5": "بلبرینگ کف‌گرد",
+    "6": "بلبرینگ شیار عمیق یک‌ردیفه",
+    "7": "بلبرینگ تماس زاویه‌ای یک‌ردیفه",
+    "8": "رولبرینگ استوانه‌ای کف‌گرد",
+}
+PREFIX_TYPE_MAP = {
+    "NU": "رولبرینگ استوانه‌ای (NU)",
+    "NJ": "رولبرینگ استوانه‌ای (NJ)",
+    "NUP": "رولبرینگ استوانه‌ای (NUP)",
+    "N": "رولبرینگ استوانه‌ای",
+    "NF": "رولبرینگ استوانه‌ای (NF)",
+    "NN": "رولبرینگ استوانه‌ای دو ردیفه",
+    "NK": "رولبرینگ سوزنی",
+    "QJ": "بلبرینگ تماس چهار نقطه‌ای",
+    "C": "رولبرینگ CARB",
+    "Y": "بلبرینگ اینسرت / یاتاقانی",
+}
+SUFFIX_MAP = {
+    "2RS1": "دو آب‌بند تماسی لاستیکی SKF",
+    "RS1": "یک آب‌بند تماسی لاستیکی SKF",
+    "2RSH": "دو آب‌بند تماسی",
+    "RSH": "یک آب‌بند تماسی",
+    "2Z": "دو محافظ فلزی",
+    "Z": "یک محافظ فلزی",
+    "C2": "لقی داخلی کمتر از نرمال",
+    "CN": "لقی داخلی نرمال",
+    "C3": "لقی داخلی بیشتر از نرمال",
+    "C4": "لقی داخلی بیشتر از C3",
+    "C5": "لقی داخلی بسیار زیاد",
+    "K": "سوراخ مخروطی با شیب استاندارد خانواده مربوطه",
+    "K30": "سوراخ مخروطی با شیب 1:30",
+    "E": "طراحی داخلی بهینه/تقویت‌شده در خانواده مربوطه",
+    "TN9": "قفسه پلی‌آمیدی تقویت‌شده با الیاف شیشه",
+    "M": "قفسه ماشین‌کاری‌شده فلزی",
+    "J": "قفسه فولادی پرس‌شده در کاربردهای مشخص",
+    "N": "شیار حلقه نگهدارنده روی رینگ بیرونی",
+    "NR": "شیار حلقه نگهدارنده به همراه حلقه",
+    "W33": "شیار و سوراخ‌های روانکاری در رینگ بیرونی (عموماً رولبرینگ بشکه‌ای)",
+    "VA201": "طراحی ویژه برای دمای بالا",
+}
+BORE_SPECIAL = {"00": 10, "01": 12, "02": 15, "03": 17}
+
+def parse_bearing_code(raw):
+    code = (raw or "").upper().strip().replace(" ", "")
+    if not code:
+        return None
+    parts = re.split(r"[-/]", code)
+    basic = parts[0]
+    suffixes = [p for p in parts[1:] if p]
+    prefix = ""
+    for p in sorted(PREFIX_TYPE_MAP, key=len, reverse=True):
+        if basic.startswith(p) and len(basic) > len(p):
+            prefix = p
+            basic_num = basic[len(p):]
+            break
+    else:
+        basic_num = basic
+    bearing_type = PREFIX_TYPE_MAP.get(prefix)
+    if not bearing_type and basic_num and basic_num[0] in BEARING_TYPE_MAP:
+        bearing_type = BEARING_TYPE_MAP[basic_num[0]]
+    series = basic_num[:-2] if len(basic_num) >= 3 else basic_num
+    bore_code = basic_num[-2:] if len(basic_num) >= 4 else basic_num[-1:]
+    bore = None
+    if bore_code in BORE_SPECIAL:
+        bore = BORE_SPECIAL[bore_code]
+    elif len(bore_code) == 2 and bore_code.isdigit() and int(bore_code) >= 4:
+        bore = int(bore_code) * 5
+    # small bearing examples such as 629
+    if len(basic_num) == 3 and basic_num[-1:].isdigit() and int(basic_num[-1]) < 10:
+        bore = int(basic_num[-1])
+    return {
+        "input": raw,
+        "normalized": code,
+        "basic": parts[0],
+        "prefix": prefix or None,
+        "type": bearing_type or "نیازمند تشخیص از خانواده دقیق برینگ",
+        "series": series,
+        "bore_code": bore_code,
+        "bore_mm": bore,
+        "suffixes": [{"code": s, "meaning": SUFFIX_MAP.get(s, "پسوند اختصاصی/نیازمند مراجعه به خانواده محصول SKF")} for s in suffixes]
+    }
+
+@app.route("/bearing/code-reader", methods=["GET", "POST"])
+def bearing_code_reader():
+    result = None
+    code = ""
+    if request.method == "POST":
+        code = request.form.get("code", "")
+        result = parse_bearing_code(code)
+    return render_template("bearing_code_reader.html", result=result, code=code, suffix_map=SUFFIX_MAP)
+
 @app.route("/bearings")
 def bearings():
-
     search = request.args.get("q", "").strip()
+    bearing_type = request.args.get("type", "").strip()
+    series = request.args.get("series", "").strip()
+    bore = request.args.get("bore", "").strip()
 
     conn = get_db()
+    types = conn.execute("SELECT DISTINCT bearing_type FROM bearings WHERE bearing_type IS NOT NULL ORDER BY bearing_type").fetchall()
+    series_list = conn.execute("SELECT DISTINCT series FROM bearings WHERE series IS NOT NULL ORDER BY series").fetchall()
 
+    sql = "SELECT * FROM bearings WHERE 1=1"
+    params = []
     if search:
-
-        bearings = conn.execute("""
-            SELECT *
-            FROM bearings
-            WHERE
-                name LIKE ?
-                OR brand LIKE ?
-                OR bearing_type LIKE ?
-                OR series LIKE ?
-            ORDER BY id DESC
-        """, (
-            f"%{search}%",
-            f"%{search}%",
-            f"%{search}%",
-            f"%{search}%"
-        )).fetchall()
-
-    else:
-
-        bearings = conn.execute("""
-            SELECT *
-            FROM bearings
-            ORDER BY id DESC
-        """).fetchall()
-
+        sql += " AND (name LIKE ? OR bearing_type LIKE ? OR series LIKE ? OR bore LIKE ?)"
+        params += [f"%{search}%"] * 4
+    if bearing_type:
+        sql += " AND bearing_type = ?"
+        params.append(bearing_type)
+    if series:
+        sql += " AND series = ?"
+        params.append(series)
+    if bore:
+        sql += " AND bore = ?"
+        params.append(bore)
+    sql += " ORDER BY CAST(REPLACE(bore,' mm','') AS INTEGER), series, name"
+    rows = conn.execute(sql, params).fetchall()
+    bores = conn.execute("SELECT DISTINCT bore FROM bearings ORDER BY CAST(REPLACE(bore,' mm','') AS INTEGER)").fetchall()
     conn.close()
 
-    return render_template(
-        "bearings.html",
-        bearings=bearings,
-        search=search
-    )
+    return render_template("bearings.html", bearings=rows, search=search, types=types, series_list=series_list, bores=bores, selected_type=bearing_type, selected_series=series, selected_bore=bore)
 
 
 @app.route("/bearing/<int:id>")
@@ -649,6 +771,37 @@ def mechanical_calculator(component):
             result = {"error":"ورودی‌ها معتبر نیستند."}
     return render_template("mechanical_calculator.html", title=cfg["title"], fields=cfg["fields"], result=result)
 
+
+
+MAINTENANCE_KNOWLEDGE = os.path.join(BASE_DIR, "database", "maintenance_knowledge.json")
+
+def load_maintenance_knowledge():
+    with open(MAINTENANCE_KNOWLEDGE, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+@app.route("/maintenance")
+def maintenance_index():
+    data = load_maintenance_knowledge()
+    return render_template("maintenance_index.html", sections=data["sections"])
+
+@app.route("/maintenance/<section_slug>")
+def maintenance_section(section_slug):
+    data = load_maintenance_knowledge()
+    section = next((x for x in data["sections"] if x["slug"] == section_slug), None)
+    if not section:
+        return "بخش تعمیرات و نگهداری پیدا نشد", 404
+    return render_template("maintenance_section.html", section=section)
+
+@app.route("/maintenance/<section_slug>/<article_slug>")
+def maintenance_article(section_slug, article_slug):
+    data = load_maintenance_knowledge()
+    section = next((x for x in data["sections"] if x["slug"] == section_slug), None)
+    if not section:
+        return "بخش پیدا نشد", 404
+    article = next((x for x in section.get("articles", []) if x["slug"] == article_slug), None)
+    if not article:
+        return "مطلب مورد نظر پیدا نشد", 404
+    return render_template("maintenance_article.html", section=section, article=article)
 
 @app.route("/components/<component>")
 def component_collection(component):

@@ -1,16 +1,9 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="page-hero">
-  <div>
-    <span class="eyebrow">MECHASSIST</span>
-    <h1>مرکز مهندسی مکانیک</h1>
-    <p>دانشنامه، محاسبات، جداول استاندارد و بانک‌های فنی در یک محیط یکپارچه.</p>
-  </div>
-</div>
-<div class="quick-links">
-  <a href="/components/bearing">🔩 مجموعه قطعات مکانیکی</a>
-  <a href="/facilities">🏢 مرکز تأسیسات</a>
-  <a href="/knowledge">📚 دانشنامه مکانیک</a>
-  <a href="/standards">📊 جداول استاندارد</a>
+<div class="hub-hero home-hero"><div><span class="eyebrow">MECHASSIST</span><h1>مرکز جامع مکانیک صنعتی</h1><p>هر مجموعه را انتخاب کنید تا زیرمجموعه‌ها و منابع تخصصی آن باز شود.</p></div></div>
+<div class="main-collections">
+<details class="collection-box" open><summary><span class="collection-icon">🔧</span><span><b>تعمیرات و نگهداری</b><small>روانکاری، سرویس، PM و عیب‌یابی</small></span><span class="summary-arrow">⌄</span></summary><div class="collection-links"><a href="/maintenance/lubricants">🛢️ روغن‌ها و روانکارها</a><a href="/maintenance/greases">🟡 گریس‌ها و گریس‌کاری</a><a href="/maintenance/service-procedures">🔄 روش‌های سرویس</a><a href="/maintenance/inspection-pm">🔍 بازرسی و PM</a><a class="collection-all" href="/maintenance">مشاهده همه مطالب ←</a></div></details>
+<details class="collection-box"><summary><span class="collection-icon">🔩</span><span><b>قطعات مکانیکی</b><small>دانشنامه، محاسبات و استانداردهای قطعات</small></span><span class="summary-arrow">⌄</span></summary><div class="collection-links"><a href="/components/bearing">🔩 برینگ و یاتاقان</a><a href="/components/gearbox">⚙️ گیربکس</a><a href="/components/coupling">🔗 کوپلینگ</a><a href="/components/shaft">🔧 شفت</a><a href="/components/belt">🛞 تسمه</a><a href="/components/chain">⛓️ زنجیر</a><a href="/components/pulley">🛞 پولی</a><a href="/components/seal">⭕ آب‌بندها</a></div></details>
+<details class="collection-box"><summary><span class="collection-icon">🏢</span><span><b>تأسیسات</b><small>تجهیزات، دانشنامه و استانداردهای تأسیساتی</small></span><span class="summary-arrow">⌄</span></summary><div class="collection-links"><a href="/facility-collection/pump">💧 پمپ‌ها</a><a href="/facility-collection/fan">🌀 فن و هواکش</a><a href="/facility-collection/compressor">💨 کمپرسورها</a><a href="/facility-collection/chiller">❄️ چیلرها</a><a href="/facility-collection/boiler">🔥 بویلر</a><a href="/facility-collection/hvac">🌬️ HVAC</a><a href="/facilities">مشاهده همه تأسیسات ←</a></div></details>
 </div>
 {% endblock %}

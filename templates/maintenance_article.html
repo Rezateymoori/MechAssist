@@ -1,0 +1,4 @@
+{% extends "layout.html" %}
+{% block content %}
+<article class="knowledge-article"><a class="back-link" href="/maintenance/{{ section.slug }}">← {{ section.title }}</a><div class="article-head"><span class="article-icon">{{ section.icon }}</span><div><span class="eyebrow">MAINTENANCE GUIDE</span><h1>{{ article.title }}</h1><p>{{ article.summary }}</p></div></div>{% for block in article.blocks %}<section class="knowledge-section"><h2>{{ block.title }}</h2><ul>{% for item in block['items'] %}<li>{{ item }}</li>{% endfor %}</ul></section>{% endfor %}<div class="safety-note"><strong>⚠️ یادآوری:</strong> مقادیر، نوع روانکار و روش سرویس نهایی باید با دستورالعمل سازنده تجهیز و شرایط واقعی کار تطبیق داده شود.</div></article>
+{% endblock %}

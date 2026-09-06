@@ -1,0 +1,5 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="hub-hero"><span class="eyebrow">MECHASSIST KNOWLEDGE HUB</span><h1>🔧 تعمیرات و نگهداری</h1><p>روانکاری، روغن‌ها، گریس‌ها، روش‌های سرویس، بازرسی و نگهداری پیشگیرانه در یک مجموعه ساختاریافته.</p></div>
+<div class="hub-grid">{% for section in sections %}<a class="hub-card" href="/maintenance/{{ section.slug }}"><div class="hub-icon">{{ section.icon }}</div><h2>{{ section.title }}</h2><p>{{ section.description }}</p><span>{{ section.articles|length }} مطلب تخصصی ←</span></a>{% endfor %}</div>
+{% endblock %}

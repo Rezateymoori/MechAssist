@@ -1,116 +1,58 @@
 {% extends "layout.html" %}
-
 {% block content %}
-
-<div class="page-title">
-
-    <h2>🔩 بانک برینگ‌ها</h2>
-
-    <p>
-        جستجو و مشاهده مشخصات فنی برینگ‌ها
-    </p>
-
+<div class="page-title"><p><a class="table-link" href="{{ url_for('bearing_code_reader') }}">🔍 مفسر و آموزش خواندن کد برینگ SKF</a></p>
+  <h2>🔩 بانک اطلاعاتی جامع برینگ SKF</h2>
+  <p>جستجو بر اساس کد، نوع، سری و قطر داخلی • {{ bearings|length }} نتیجه</p>
 </div>
 
-
-<form
-    class="search-panel"
-    method="GET"
-    action="{{ url_for('bearings') }}"
->
-
-    <input
-        type="text"
-        name="q"
-        value="{{ search }}"
-        placeholder="نام برینگ، برند، نوع یا سری..."
-    >
-
-    <button type="submit">
-        🔍 جستجو
-    </button>
-
+<form class="bearing-filter-panel" method="GET" action="{{ url_for('bearings') }}">
+  <div class="filter-field wide">
+    <label>جستجوی سریع</label>
+    <input type="text" name="q" value="{{ search }}" placeholder="مثلاً 6205، 6310، NU 220 یا SKF...">
+  </div>
+  <div class="filter-field">
+    <label>نوع برینگ</label>
+    <select name="type">
+      <option value="">همه انواع</option>
+      {% for t in types %}<option value="{{ t[0] }}" {% if selected_type==t[0] %}selected{% endif %}>{{ t[0] }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label>سری</label>
+    <select name="series">
+      <option value="">همه سری‌ها</option>
+      {% for s in series_list %}<option value="{{ s[0] }}" {% if selected_series==s[0] %}selected{% endif %}>{{ s[0] }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="filter-field">
+    <label>قطر داخلی d</label>
+    <select name="bore">
+      <option value="">همه سایزها</option>
+      {% for b in bores %}<option value="{{ b[0] }}" {% if selected_bore==b[0] %}selected{% endif %}>{{ b[0] }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="filter-actions">
+    <button type="submit">🔍 اعمال فیلتر</button>
+    <a href="{{ url_for('bearings') }}">پاک کردن</a>
+  </div>
 </form>
 
+<div class="bearing-note">ℹ️ ابعاد سری‌های استاندارد در بانک ثبت شده‌اند. مقادیر بار و سرعت برای انتخاب نهایی باید با پسوند دقیق محصول در کاتالوگ/صفحه رسمی SKF کنترل شوند.</div>
 
 {% if bearings %}
-
-<div class="equipment-grid">
-
-    {% for b in bearings %}
-
-    <div class="equipment-card">
-
-        <div class="icon">
-            🔩
-        </div>
-
-        <div>
-
-            <h2>
-                {{ b.name }}
-            </h2>
-
-            <p>
-                <strong>برند:</strong>
-                {{ b.brand or "-" }}
-            </p>
-
-            <p>
-                <strong>نوع:</strong>
-                {{ b.bearing_type or "-" }}
-            </p>
-
-            <p>
-                <strong>سری:</strong>
-                {{ b.series or "-" }}
-            </p>
-
-            <p>
-                <strong>قطر داخلی:</strong>
-                {{ b.bore or "-" }}
-            </p>
-
-            <p>
-                <strong>حداکثر دور:</strong>
-                {{ b.max_rpm or "-" }}
-            </p>
-
-        </div>
-
-
-        <a
-            href="{{ url_for('bearing_detail', id=b.id) }}"
-        >
-            مشاهده مشخصات
-        </a>
-
-    </div>
-
-    {% endfor %}
-
+<div class="bearing-table-wrap">
+<table class="bearing-table">
+<thead><tr><th>کد SKF</th><th>نوع</th><th>سری</th><th>d</th><th>D</th><th>B / T</th><th>آب‌بندی / لقی</th><th></th></tr></thead>
+<tbody>
+{% for b in bearings %}
+<tr>
+<td><strong>{{ b.name }}</strong></td><td>{{ b.bearing_type }}</td><td>{{ b.series }}</td>
+<td>{{ b.bore }}</td><td>{{ b.outer_diameter }}</td><td>{{ b.width }}</td>
+<td>{{ b.seal or '-' }} / {{ b.clearance or '-' }}</td>
+<td><a class="table-link" href="{{ url_for('bearing_detail', id=b.id) }}">جزئیات</a></td>
+</tr>
+{% endfor %}
+</tbody></table>
 </div>
-
-{% else %}
-
-<div class="search-panel">
-
-    <h3>
-        ⚠️ برینگی پیدا نشد
-    </h3>
-
-    {% if search %}
-        <p>
-            نتیجه‌ای برای «{{ search }}» پیدا نشد.
-        </p>
-    {% else %}
-        <p>
-            هنوز رکوردی در بانک برینگ‌ها وجود ندارد.
-        </p>
-    {% endif %}
-
-</div>
-
-{% endif %}
-
+{% else %}<div class="search-panel"><h3>⚠️ نتیجه‌ای پیدا نشد</h3><p>فیلترها را تغییر دهید یا کد برینگ را جستجو کنید.</p></div>{% endif %}
 {% endblock %}

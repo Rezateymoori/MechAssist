@@ -1,0 +1,5 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-hero"><div><a class="back-link" href="/maintenance">← تعمیرات و نگهداری</a><span class="eyebrow">MAINTENANCE LIBRARY</span><h1>{{ section.icon }} {{ section.title }}</h1><p>{{ section.description }}</p></div></div>
+<div class="article-grid">{% for article in section.articles %}<a class="article-card" href="/maintenance/{{ section.slug }}/{{ article.slug }}"><h2>{{ article.title }}</h2><p>{{ article.summary }}</p><span>مطالعه مطلب ←</span></a>{% endfor %}</div>
+{% endblock %}

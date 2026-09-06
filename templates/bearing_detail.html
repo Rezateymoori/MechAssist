@@ -1,87 +1,11 @@
-<h1>
-🔩 اطلاعات برینگ
-</h1>
-
-
-<h2>
-{{bearing.name}}
-</h2>
-
-
-<p>
-برند:
-{{bearing.brand}}
-</p>
-
-
-<p>
-نوع:
-{{bearing.bearing_type}}
-</p>
-
-
-<hr>
-
-
-<h3>
-ابعاد
-</h3>
-
-
-<ul>
-
-<li>
-قطر داخلی:
-{{bearing.bore}}
-</li>
-
-
-<li>
-قطر خارجی:
-{{bearing.outer_diameter}}
-</li>
-
-
-<li>
-عرض:
-{{bearing.width}}
-</li>
-
-
-</ul>
-
-
-<h3>
-مشخصات عملکردی
-</h3>
-
-
-<ul>
-
-<li>
-ظرفیت دینامیکی:
-{{bearing.dynamic_load}}
-</li>
-
-
-<li>
-دور مجاز:
-{{bearing.max_rpm}}
-</li>
-
-
-<li>
-لقی:
-{{bearing.clearance}}
-</li>
-
-</ul>
-
-
-<h3>
-خرابی‌های رایج
-</h3>
-
-<p>
-{{bearing.failures}}
-</p>
+{% extends "layout.html" %}
+{% block content %}
+<div class="page-title"><h2>🔩 {{ bearing.name }}</h2><p>{{ bearing.bearing_type }} • سری {{ bearing.series }}</p></div>
+<div class="bearing-detail-grid">
+<section class="detail-card"><h3>📐 ابعاد اصلی</h3><div class="dimension-row"><b>d</b><span>{{ bearing.bore }}</span></div><div class="dimension-row"><b>D</b><span>{{ bearing.outer_diameter }}</span></div><div class="dimension-row"><b>B / T</b><span>{{ bearing.width }}</span></div></section>
+<section class="detail-card"><h3>⚙️ مشخصات</h3><p><b>برند:</b> {{ bearing.brand }}</p><p><b>لقی:</b> {{ bearing.clearance }}</p><p><b>آب‌بندی:</b> {{ bearing.seal }}</p><p><b>روانکاری:</b> {{ bearing.lubrication }}</p></section>
+<section class="detail-card"><h3>📊 انتخاب و عملکرد</h3><p><b>بار دینامیکی:</b> {{ bearing.dynamic_load }}</p><p><b>بار استاتیکی:</b> {{ bearing.static_load }}</p><p><b>سرعت:</b> {{ bearing.max_rpm }}</p></section>
+<section class="detail-card"><h3>🛠️ کاربرد و نگهداری</h3><p><b>کاربرد:</b> {{ bearing.applications }}</p><p><b>خرابی‌های رایج:</b> {{ bearing.failures }}</p><p><b>مرجع ابعادی:</b> {{ bearing.equivalent }}</p></section>
+</div>
+<a class="back-link" href="{{ url_for('bearings') }}">← بازگشت به بانک برینگ‌ها</a>
+{% endblock %}
