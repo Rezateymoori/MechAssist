@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 import json
 import os
+import re
 import math
 
 app = Flask(__name__)
@@ -607,7 +608,12 @@ def parse_bearing_code(raw):
     code = (raw or "").upper().strip().replace(" ", "")
     if not code:
         return None
-    parts = re.split(r"[-/]", code)
+    # برند ممکن است روی رینگ قبل از شماره درج شود (مثل SKF6205).
+    # برای تجزیه، نام برند را از کد فنی جدا می‌کنیم.
+    normalized_code = code
+    if normalized_code.startswith("SKF"):
+        normalized_code = normalized_code[3:]
+    parts = re.split(r"[-/]", normalized_code)
     basic = parts[0]
     suffixes = [p for p in parts[1:] if p]
     prefix = ""
@@ -633,7 +639,7 @@ def parse_bearing_code(raw):
         bore = int(basic_num[-1])
     return {
         "input": raw,
-        "normalized": code,
+        "normalized": normalized_code,
         "basic": parts[0],
         "prefix": prefix or None,
         "type": bearing_type or "نیازمند تشخیص از خانواده دقیق برینگ",

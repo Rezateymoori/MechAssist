@@ -9,21 +9,26 @@
 </head>
 <body>
 <div class="topbar">
-  <a class="brand" href="/">🔧 MechAssist</a>
-  <nav class="topnav">
-    <a href="/">🏠 داشبورد</a>
-    <a href="/maintenance">🔧 تعمیرات و نگهداری</a>
-    <details><summary>🔩 قطعات مکانیکی</summary><div class="dropdown-panel">
-      <a href="/components/bearing">برینگ و یاتاقان</a><a href="/components/gearbox">گیربکس</a><a href="/components/coupling">کوپلینگ</a><a href="/components/shaft">شفت</a><a href="/components/belt">تسمه</a><a href="/components/chain">زنجیر صنعتی</a><a href="/components/pulley">پولی</a><a href="/components/seal">آب‌بندها</a>
-    </div></details>
-    <details><summary>🏢 تأسیسات</summary><div class="dropdown-panel wide">
-      <a href="/facility-collection/pump">پمپ‌ها</a><a href="/facility-collection/fan">فن و هواکش</a><a href="/facility-collection/compressor">کمپرسورها</a><a href="/facility-collection/chiller">چیلرها</a><a href="/facility-collection/boiler">بویلر و دیگ</a><a href="/facility-collection/hvac">HVAC</a><a href="/facility-collection/valve">شیرآلات</a><a href="/facility-collection/heat_exchanger">مبدل حرارتی</a><a href="/facility-collection/tank">مخازن</a><a href="/facility-collection/pipe">لوله و اتصالات</a><a href="/facility-collection/fire_fighting">آتش‌نشانی</a><a href="/facility-collection/water_treatment">تصفیه آب</a><a href="/facility-collection/cooling_tower">برج خنک‌کننده</a>
-    </div></details>
-    <details><summary>📊 جداول استاندارد</summary><div class="dropdown-panel"><a href="/standards/bearings">برینگ</a><a href="/standards/bolts">پیچ و مهره</a><a href="/standards/housings">یاتاقان‌ها</a><a href="/standards/torque">گشتاور</a><a href="/standards/units">تبدیل واحد</a><a href="/standards/keys">خار و شفت</a><a href="/standards/tolerances">تلرانس</a><a href="/standards/threads">رزوه</a></div></details>
-    <a href="/knowledge">📚 دانشنامه</a><a href="/search">🔍 جستجو</a>
-  </nav>
-  <form class="top-search" method="get" action="/search"><input name="q" placeholder="جستجو..."><button>🔍</button></form>
+  <div class="mobile-head">
+    <a class="brand" href="/">🔧 MechAssist</a>
+    <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="باز کردن منو" aria-expanded="false">☰</button>
+  </div>
+  <div class="nav-area" id="navArea">
+    <nav class="topnav">
+      <a href="/">🏠 داشبورد</a>
+      <a href="/maintenance">🔧 تعمیرات و نگهداری</a>
+      <details><summary>🔩 قطعات مکانیکی</summary><div class="dropdown-panel">
+        <a href="/components/bearing">برینگ و یاتاقان</a><a href="/components/gearbox">گیربکس</a><a href="/components/coupling">کوپلینگ</a><a href="/components/shaft">شفت</a><a href="/components/belt">تسمه</a><a href="/components/chain">زنجیر صنعتی</a><a href="/components/pulley">پولی</a><a href="/components/seal">آب‌بندها</a>
+      </div></details>
+      <details><summary>🏢 تأسیسات</summary><div class="dropdown-panel wide">
+        <a href="/facility-collection/pump">پمپ‌ها</a><a href="/facility-collection/fan">فن و هواکش</a><a href="/facility-collection/compressor">کمپرسورها</a><a href="/facility-collection/chiller">چیلرها</a><a href="/facility-collection/boiler">بویلر و دیگ</a><a href="/facility-collection/hvac">HVAC</a><a href="/facility-collection/valve">شیرآلات</a><a href="/facility-collection/heat_exchanger">مبدل حرارتی</a><a href="/facility-collection/tank">مخازن</a><a href="/facility-collection/pipe">لوله و اتصالات</a><a href="/facility-collection/fire_fighting">آتش‌نشانی</a><a href="/facility-collection/water_treatment">تصفیه آب</a><a href="/facility-collection/cooling_tower">برج خنک‌کننده</a>
+      </div></details>
+      <details><summary>📊 جداول استاندارد</summary><div class="dropdown-panel"><a href="/standards/bearings">برینگ</a><a href="/standards/bolts">پیچ و مهره</a><a href="/standards/housings">یاتاقان‌ها</a><a href="/standards/torque">گشتاور</a><a href="/standards/units">تبدیل واحد</a><a href="/standards/keys">خار و شفت</a><a href="/standards/tolerances">تلرانس</a><a href="/standards/threads">رزوه</a></div></details>
+      <a href="/knowledge">📚 دانشنامه</a><a href="/search">🔍 جستجو</a>
+    </nav>
+    <form class="top-search" method="get" action="/search"><input name="q" placeholder="جستجو..."><button type="submit">🔍</button></form>
+  </div>
 </div>
 <main class="content"><header class="page-header"><h1>دستیار مکانیک صنعتی</h1></header>{% block content %}{% endblock %}</main>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/static/sw.js').catch(()=>{}));}</script>
+<script>document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('mobileMenuBtn'),n=document.getElementById('navArea');if(b&&n){b.addEventListener('click',()=>{const open=n.classList.toggle('open');b.setAttribute('aria-expanded',open);b.textContent=open?'✕':'☰';});n.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{n.classList.remove('open');b.setAttribute('aria-expanded','false');b.textContent='☰';}));}});if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('/static/sw.js').catch(()=>{}));}</script>
 </body></html>
